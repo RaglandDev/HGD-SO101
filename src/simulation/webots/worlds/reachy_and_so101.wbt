@@ -1,19 +1,138 @@
 #VRML_SIM R2023b utf8
+
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/tables/protos/Table.proto"
+EXTERNPROTO "../protos/SO101.proto"
+EXTERNPROTO "../protos/ReachyMini.proto"
+
 WorldInfo {
+  title "Gesture-and-Gaze-Directed SO-101 via Reachy Mini"
+  basicTimeStep 16
 }
 Viewpoint {
-  orientation -0.5773 0.5773 0.5773 2.0944
-  position 0 0 10
+  orientation -0.20 0.42 0.885 2.35
+  position 1.05 -0.95 1.45
 }
 Background {
   skyColor [
-    0.4 0.7 1
+    0.55 0.72 0.92
   ]
 }
 DirectionalLight {
-  ambientIntensity 1
-  direction 0.1 -0.5 0.3
+  ambientIntensity 0.9
+  intensity 1.6
+  direction -0.4 -0.3 -1
+  castShadows TRUE
+}
+DirectionalLight {
+  intensity 0.6
+  direction 0.6 0.4 -0.5
 }
 RectangleArena {
+  floorSize 3 3
+  floorTileSize 0.5 0.5
+}
+Table {
+  translation 0 0 0
+  size 1.2 0.8 0.74
+  feetSize 0.05 0.05
+  trayAppearance PBRAppearance {
+    baseColor 0.55 0.4 0.28
+    roughness 0.8
+    metalness 0
+  }
+}
+ReachyMini {
+  translation -0.42 0 0.74
+  name "reachy_mini"
+  controller "reachy_controller"
+}
+SO101 {
+  translation 0.32 0 0.74
+  rotation 0 0 1 3.14159
+  name "so101"
+  controller "so101_controller"
+  supervisor TRUE
+  selfCollision FALSE
+  toolSlot [
+    DEF GRIP_SITE Solid {
+      name "grip_site"
+    }
+  ]
+}
+DEF CUBE_RED Solid {
+  translation 0.12 -0.14 0.7525
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.9 0.15 0.15
+        roughness 0.6
+        metalness 0
+      }
+      geometry DEF CUBE_GEO Box {
+        size 0.025 0.025 0.025
+      }
+    }
+  ]
+  name "cube_red"
+  boundingObject USE CUBE_GEO
+  physics Physics {
+    density -1
+    mass 0.02
+  }
+}
+DEF CUBE_GREEN Solid {
+  translation 0.10 0 0.7525
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.15 0.8 0.2
+        roughness 0.6
+        metalness 0
+      }
+      geometry USE CUBE_GEO
+    }
+  ]
+  name "cube_green"
+  boundingObject USE CUBE_GEO
+  physics Physics {
+    density -1
+    mass 0.02
+  }
+}
+DEF CUBE_BLUE Solid {
+  translation 0.12 0.14 0.7525
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.15 0.35 0.9
+        roughness 0.6
+        metalness 0
+      }
+      geometry USE CUBE_GEO
+    }
+  ]
+  name "cube_blue"
+  boundingObject USE CUBE_GEO
+  physics Physics {
+    density -1
+    mass 0.02
+  }
+}
+DEF DROP_TRAY Solid {
+  translation 0.30 0.22 0.7425
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.25 0.25 0.28
+        roughness 0.9
+        metalness 0
+      }
+      geometry DEF TRAY_GEO Box {
+        size 0.12 0.12 0.005
+      }
+    }
+  ]
+  name "drop_tray"
+  boundingObject USE TRAY_GEO
 }

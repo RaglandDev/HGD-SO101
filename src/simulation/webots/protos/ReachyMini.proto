@@ -1,0 +1,1689 @@
+#VRML_SIM R2023b utf8
+# license: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# Simplified Reachy Mini for Webots: real shell meshes from
+# https://github.com/pollen-robotics/reachy_mini with the Stewart-platform
+# neck approximated by a 2-DOF (yaw + pitch) kinematic neck.
+# Motors: "neck_yaw", "neck_pitch". Camera: "head_camera".
+
+PROTO ReachyMini [
+  field SFVec3f    translation     0 0 0
+  field SFRotation rotation        0 0 1 0
+  field SFString   name            "ReachyMini"
+  field SFString   controller      "void"
+  field MFString   controllerArgs  []
+  field SFBool     supervisor      FALSE
+  field SFBool     synchronization TRUE
+]
+{
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    controller IS controller
+    controllerArgs IS controllerArgs
+    supervisor IS supervisor
+    synchronization IS synchronization
+    children [
+      Pose {
+        translation -0.000000 0.000000 0.229800
+        rotation 0.000000 0.000000 1.000000 1.570800
+        children [
+          Shape {
+            appearance PBRAppearance { baseColor 0.301961 0.301961 0.301961 roughness 0.9 metalness 0 }
+            geometry Mesh { url "ReachyMini_assets/body_foot_3dprint.stl" }
+          }
+        ]
+      }
+      Pose {
+        translation -0.000000 0.000000 0.041300
+        rotation -0.577350 0.577352 -0.577350 2.094399
+        children [
+          Shape {
+            appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+            geometry Mesh { url "ReachyMini_assets/dc15_a01_horn_dummy.stl" }
+          }
+        ]
+      }
+      Pose {
+        translation -0.000000 0.000000 0.229800
+        rotation 0.000000 0.000000 1.000000 1.570800
+        children [
+          Shape {
+            appearance PBRAppearance { baseColor 0.301961 0.301961 0.301961 roughness 0.9 metalness 0 }
+            geometry Mesh { url "ReachyMini_assets/body_turning_3dprint.stl" }
+          }
+        ]
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis 0 0 1
+          anchor 0 0 0.0348
+        }
+        device [
+          RotationalMotor {
+            name "neck_yaw"
+            maxVelocity 4
+            minPosition -2.7
+            maxPosition 2.7
+            maxTorque 10
+          }
+          PositionSensor { name "neck_yaw_sensor" }
+        ]
+        endPoint Solid {
+          name "body"
+          children [
+            Pose {
+              translation -0.000000 -0.000000 0.229800
+              rotation 0.000000 -0.000000 1.000000 1.570795
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 1 1 1 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/body_down_3dprint.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000000 -0.000000 0.229800
+              rotation 0.000000 -0.000000 1.000000 1.570790
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.301961 0.301961 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/stewart_tricap_3dprint.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.005000 0.000000 0.088383
+              rotation 0.577353 0.577350 0.577348 2.094394
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.196078 0.196078 0.196078 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/5w_speaker.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000000 -0.000000 0.023300
+              rotation 1.000000 0.000000 -0.000000 1.570800
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.768627 0.886275 0.952941 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/bearing_85x110x13.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000000 -0.000000 0.229800
+              rotation 0.000000 -0.000000 1.000000 1.570795
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 1 1 1 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/body_top_3dprint.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000000 -0.000000 0.229800
+              rotation 0.000000 -0.000000 1.000000 1.570795
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.301961 0.301961 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/stewart_main_plate_3dprint.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 0.010000 0.076633
+              rotation -0.707114 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_2.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 0.010000 0.076633
+              rotation -0.707114 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_b_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 0.010000 0.076633
+              rotation -0.707114 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_m_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 0.010000 0.076633
+              rotation -0.707114 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.87451 0.447059 0.317647 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_led_cap2_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 0.010000 0.076633
+              rotation -0.707114 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/bts2_m2_6x8.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 0.010000 0.076633
+              rotation -0.707114 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_f_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 0.010000 0.076633
+              rotation -0.707114 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/b3b_eh_1.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 0.010000 0.076633
+              rotation -0.707114 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/b3b_eh.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 0.010000 0.076633
+              rotation -0.707114 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_3.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 0.010000 0.076633
+              rotation -0.707114 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_1.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 0.010000 0.076633
+              rotation -0.707114 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 0.038440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_2.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 0.038440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_b_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 0.038440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_m_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 0.038440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.87451 0.447059 0.317647 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_led_cap2_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 0.038440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/bts2_m2_6x8.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 0.038440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_f_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 0.038440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/b3b_eh_1.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 0.038440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/b3b_eh.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 0.038440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_3.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 0.038440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_1.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 0.038440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000000 -0.000000 0.041300
+              rotation -0.577350 0.577352 -0.577350 2.094399
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_2.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000000 -0.000000 0.041300
+              rotation -0.577350 0.577352 -0.577350 2.094399
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_b_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000000 -0.000000 0.041300
+              rotation -0.577350 0.577352 -0.577350 2.094399
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_m_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000000 -0.000000 0.041300
+              rotation -0.577350 0.577352 -0.577350 2.094399
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.87451 0.447059 0.317647 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_led_cap2_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000000 -0.000000 0.041300
+              rotation -0.577350 0.577352 -0.577350 2.094399
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/bts2_m2_6x8.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000000 -0.000000 0.041300
+              rotation -0.577350 0.577352 -0.577350 2.094399
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_f_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000000 -0.000000 0.041300
+              rotation -0.577350 0.577352 -0.577350 2.094399
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/b3b_eh_1.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000000 -0.000000 0.041300
+              rotation -0.577350 0.577352 -0.577350 2.094399
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/b3b_eh.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000000 -0.000000 0.041300
+              rotation -0.577350 0.577352 -0.577350 2.094399
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_3.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000000 -0.000000 0.041300
+              rotation -0.577350 0.577352 -0.577350 2.094399
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_1.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000000 -0.000000 0.041300
+              rotation -0.577350 0.577352 -0.577350 2.094399
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 -0.038441 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_2.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 -0.038441 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_b_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 -0.038441 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_m_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 -0.038441 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.87451 0.447059 0.317647 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_led_cap2_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 -0.038441 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/bts2_m2_6x8.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 -0.038441 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_f_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 -0.038441 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/b3b_eh_1.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 -0.038441 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/b3b_eh.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 -0.038441 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_3.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 -0.038441 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_1.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 -0.038441 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 -0.010000 0.076633
+              rotation -0.707111 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_2.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 -0.010000 0.076633
+              rotation -0.707111 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_b_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 -0.010000 0.076633
+              rotation -0.707111 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_m_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 -0.010000 0.076633
+              rotation -0.707111 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.87451 0.447059 0.317647 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_led_cap2_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 -0.010000 0.076633
+              rotation -0.707111 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/bts2_m2_6x8.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 -0.010000 0.076633
+              rotation -0.707111 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_f_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 -0.010000 0.076633
+              rotation -0.707111 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/b3b_eh_1.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 -0.010000 0.076633
+              rotation -0.707111 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/b3b_eh.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 -0.010000 0.076633
+              rotation -0.707111 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_3.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 -0.010000 0.076633
+              rotation -0.707111 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_1.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 -0.010000 0.076633
+              rotation -0.707111 -0.707110 0.000001 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 0.048440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_2.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 0.048440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_b_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 0.048440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_m_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 0.048440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.87451 0.447059 0.317647 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_led_cap2_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 0.048440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/bts2_m2_6x8.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 0.048440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_f_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 0.048440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/b3b_eh_1.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 0.048440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/b3b_eh.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 0.048440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_3.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 0.048440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_1.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 0.048440 0.076633
+              rotation -0.965925 0.258819 -0.000000 3.141590
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 -0.048440 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_2.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 -0.048440 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_b_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 -0.048440 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_m_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 -0.048440 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.87451 0.447059 0.317647 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_led_cap2_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 -0.048440 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/bts2_m2_6x8.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 -0.048440 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_case_f_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 -0.048440 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/b3b_eh_1.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 -0.048440 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/b3b_eh.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 -0.048440 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_3.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 -0.048440 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_1.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 -0.048440 0.076633
+              rotation 0.258816 -0.965927 0.000003 3.141593
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 0.038440 0.076633
+              rotation -0.694746 0.186157 0.694747 2.773486
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_horn_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.000000 0.000000 -0.076534
+              rotation -0.707105 0.707108 -0.000001 3.141587
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.301961 0.301961 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/mp01062_stewart_arm_3.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.098438 -0.014501 0.076633
+              rotation 0.935113 -0.250563 -0.250562 1.637838
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.439216 0.47451 0.501961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/stewart_link_ball.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.041140 0.014256 0.113102
+              rotation 0.192971 -0.840473 0.506327 2.140622
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.811765 0.858824 0.898039 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/stewart_link_rod.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.011835 0.035499 0.076633
+              rotation 0.935111 -0.250568 -0.250565 1.637839
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.439216 0.47451 0.501961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/stewart_link_ball.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 0.048440 0.076633
+              rotation 0.694747 -0.186160 0.694745 2.773492
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_horn_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000001 -0.000000 0.229800
+              rotation 0.000002 -0.000000 -1.000000 2.618000
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.301961 0.301961 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/mp01062_stewart_arm_3.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.008224 0.042756 0.113102
+              rotation 0.529472 0.542885 -0.651871 2.785001
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.811765 0.858824 0.898039 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/stewart_link_rod.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 0.010000 0.076633
+              rotation 0.577350 0.577346 -0.577354 2.094401
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_horn_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.036661 0.050000 0.034133
+              rotation 0.000001 1.000000 -0.000005 1.570800
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.439216 0.47451 0.501961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/stewart_link_ball.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000001 -0.000000 -0.076534
+              rotation -0.965923 -0.258814 0.000002 3.141588
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.301961 0.301961 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/mp01062_stewart_arm_3.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.032916 0.028500 0.113102
+              rotation 0.372012 0.925292 0.073772 1.836796
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.811765 0.858824 0.898039 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/stewart_link_rod.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.036661 -0.050000 0.034133
+              rotation 0.000004 1.000000 -0.000000 1.570800
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.439216 0.47451 0.501961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/stewart_link_ball.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.000000 -0.000000 0.229800
+              rotation 0.000005 0.000005 -1.000000 0.523600
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.301961 0.301961 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/mp01062_stewart_arm_3.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.050161 -0.010000 0.076633
+              rotation -0.577352 -0.577350 -0.577348 2.094395
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_horn_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.032917 -0.028500 0.113102
+              rotation -0.268500 0.939362 -0.213323 1.744310
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.811765 0.858824 0.898039 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/stewart_link_rod.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.000000 -0.000000 -0.076534
+              rotation 0.258813 0.965887 -0.000003 3.141591
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.301961 0.301961 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/mp01062_stewart_arm_3.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.011835 -0.035499 0.076633
+              rotation -0.935115 -0.250559 0.250560 1.637836
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.439216 0.47451 0.501961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/stewart_link_ball.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.016420 -0.048440 0.076633
+              rotation -0.250560 0.935115 0.250558 1.637827
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_horn_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.008224 -0.042756 0.113102
+              rotation -0.526194 0.559893 0.640032 2.759366
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.811765 0.858824 0.898039 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/stewart_link_rod.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.033740 -0.038440 0.076633
+              rotation 0.250563 -0.935112 0.250566 1.637839
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/dc15_a01_horn_dummy.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.098437 0.014501 0.076633
+              rotation -0.935113 -0.250563 0.250562 1.637838
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.439216 0.47451 0.501961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/stewart_link_ball.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation -0.000001 0.000000 0.229800
+              rotation -0.000001 0.000003 1.000000 1.570800
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.301961 0.301961 0.301961 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/mp01062_stewart_arm_3.stl" }
+                }
+              ]
+            }
+            Pose {
+              translation 0.041139 -0.014256 0.113102
+              rotation 0.674707 0.688720 -0.265396 1.521343
+              children [
+                Shape {
+                  appearance PBRAppearance { baseColor 0.811765 0.858824 0.898039 roughness 0.9 metalness 0 }
+                  geometry Mesh { url "ReachyMini_assets/stewart_link_rod.stl" }
+                }
+              ]
+            }
+            HingeJoint {
+              jointParameters HingeJointParameters {
+                axis 0 1 0
+                anchor 0 0 0.149571
+              }
+              device [
+                RotationalMotor {
+                  name "neck_pitch"
+                  maxVelocity 4
+                  minPosition -0.6
+                  maxPosition 0.6
+                  maxTorque 10
+                }
+                PositionSensor { name "neck_pitch_sensor" }
+              ]
+              endPoint Solid {
+                name "head"
+                children [
+                  Pose {
+                    translation 0.037710 -0.032500 0.202071
+                    rotation -0.000004 0.999998 -0.000003 3.141587
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.498039 0.498039 0.498039 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/m12_fisheye_lens_1_8mm.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.029173 0.006999 0.107071
+                    rotation 0.707126 0.000004 0.707127 3.141589
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.439216 0.47451 0.501961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/stewart_link_ball__2.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation 0.063475 -0.032499 0.202071
+                    rotation -0.000004 0.999998 -0.000003 3.141587
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.439216 0.47451 0.501961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/big_lens_d40.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.005001 0.000000 0.202071
+                    rotation -0.000004 0.000004 1.000000 1.570804
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.901961 0.901961 0.901961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/neck_reference_3dprint.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.005001 0.000000 0.202071
+                    rotation -0.000004 0.000004 1.000000 1.570804
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 1 1 1 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/head_back_3dprint.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation 0.032099 -0.010499 0.211821
+                    rotation -0.000002 -0.000005 -1.000000 1.570789
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.498039 0.498039 0.498039 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/arducam.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation 0.041499 0.000001 0.202071
+                    rotation -0.000004 0.000004 1.000000 1.570804
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.301961 0.301961 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/pp01102_arducam_carter.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.005201 0.000000 0.202071
+                    rotation -0.000004 0.000004 1.000000 1.570804
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.498039 0.498039 0.498039 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/antenna_holder_l_3dprint.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.016159 0.043014 0.149570
+                    rotation 0.935114 -0.250564 -0.250558 1.637829
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.439216 0.47451 0.501961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/stewart_link_ball__2.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.005176 0.000000 0.202071
+                    rotation -0.000004 0.000004 1.000000 1.570804
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.0980392 0.0980392 0.0980392 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/lens_cap_d30_3dprint.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.005141 0.000000 0.202071
+                    rotation -0.000004 0.000004 1.000000 1.570804
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.0980392 0.0980392 0.0980392 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/lens_cap_d40_3dprint.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.005201 0.000000 0.202071
+                    rotation -0.000004 0.000004 1.000000 1.570804
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.498039 0.498039 0.498039 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/antenna_holder_r_3dprint.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.029173 -0.007001 0.107071
+                    rotation 0.707126 0.000004 0.707127 3.141589
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.439216 0.47451 0.501961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/stewart_link_ball__2.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation 0.043584 0.032501 0.202071
+                    rotation -0.000004 0.999998 -0.000003 3.141587
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.439216 0.47451 0.501961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/small_lens_d30.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.028283 0.050013 0.149570
+                    rotation 0.935114 -0.250564 -0.250558 1.637829
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.439216 0.47451 0.501961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/stewart_link_ball__2.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.016158 -0.043014 0.149571
+                    rotation -0.935112 -0.250568 0.250562 1.637841
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.439216 0.47451 0.501961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/stewart_link_ball__2.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.005001 0.000000 0.202071
+                    rotation -0.000004 0.000004 1.000000 1.570804
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.196078 0.196078 0.196078 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/glasses_dolder_3dprint.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.005001 0.000000 0.202071
+                    rotation -0.000004 0.000004 1.000000 1.570804
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 1 1 1 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/head_front_3dprint.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.005001 0.000000 0.202071
+                    rotation -0.000004 0.000004 1.000000 1.570804
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 1 1 1 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/head_mic_3dprint.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation 0.037774 0.032500 0.202071
+                    rotation -0.000004 0.999998 -0.000003 3.141587
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.498039 0.498039 0.498039 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/m12_fisheye_lens_1_8mm.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.028283 -0.050014 0.149571
+                    rotation -0.935112 -0.250568 0.250562 1.637841
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.439216 0.47451 0.501961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/stewart_link_ball__2.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031160 0.048960 0.220910
+                    rotation 0.501140 -0.864835 -0.030297 3.037113
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_2.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031160 0.048960 0.220910
+                    rotation 0.501140 -0.864835 -0.030297 3.037113
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/dc15_a01_case_b_dummy.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031160 0.048960 0.220910
+                    rotation 0.501140 -0.864835 -0.030297 3.037113
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/dc15_a01_case_m_dummy.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031160 0.048960 0.220910
+                    rotation 0.501140 -0.864835 -0.030297 3.037113
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.87451 0.447059 0.317647 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/dc15_a01_led_cap2_dummy.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031160 0.048960 0.220910
+                    rotation 0.501140 -0.864835 -0.030297 3.037113
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/bts2_m2_6x8.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031160 0.048960 0.220910
+                    rotation 0.501140 -0.864835 -0.030297 3.037113
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/dc15_a01_case_f_dummy.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031160 0.048960 0.220910
+                    rotation 0.501140 -0.864835 -0.030297 3.037113
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/b3b_eh_1.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031160 0.048960 0.220910
+                    rotation 0.501140 -0.864835 -0.030297 3.037113
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/b3b_eh.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031160 0.048960 0.220910
+                    rotation 0.501140 -0.864835 -0.030297 3.037113
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_3.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031160 0.048960 0.220910
+                    rotation 0.501140 -0.864835 -0.030297 3.037113
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_1.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031160 0.048960 0.220910
+                    rotation 0.501140 -0.864835 -0.030297 3.037113
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031159 -0.048960 0.220911
+                    rotation 0.864055 -0.500680 -0.052237 3.081064
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_2.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031159 -0.048960 0.220911
+                    rotation 0.864055 -0.500680 -0.052237 3.081064
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/dc15_a01_case_b_dummy.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031159 -0.048960 0.220911
+                    rotation 0.864055 -0.500680 -0.052237 3.081064
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/dc15_a01_case_m_dummy.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031159 -0.048960 0.220911
+                    rotation 0.864055 -0.500680 -0.052237 3.081064
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.87451 0.447059 0.317647 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/dc15_a01_led_cap2_dummy.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031159 -0.048960 0.220911
+                    rotation 0.864055 -0.500680 -0.052237 3.081064
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/bts2_m2_6x8.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031159 -0.048960 0.220911
+                    rotation 0.864055 -0.500680 -0.052237 3.081064
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/dc15_a01_case_f_dummy.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031159 -0.048960 0.220911
+                    rotation 0.864055 -0.500680 -0.052237 3.081064
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/b3b_eh_1.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031159 -0.048960 0.220911
+                    rotation 0.864055 -0.500680 -0.052237 3.081064
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/b3b_eh.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031159 -0.048960 0.220911
+                    rotation 0.864055 -0.500680 -0.052237 3.081064
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_3.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031159 -0.048960 0.220911
+                    rotation 0.864055 -0.500680 -0.052237 3.081064
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10_1.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031159 -0.048960 0.220911
+                    rotation 0.864055 -0.500680 -0.052237 3.081064
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/phs_1_7x20_5_dc10.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.038545 -0.057314 0.281039
+                    rotation -0.782382 0.483707 -0.392310 1.881202
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0 0 0 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/antenna.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031159 -0.048960 0.220911
+                    rotation 0.864055 -0.500680 -0.052238 3.081061
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/dc15_a01_horn_dummy.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.036757 -0.052192 0.221590
+                    rotation 0.060309 0.034949 0.997568 2.093353
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.713725 0.760784 0.8 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/antenna_interface_3dprint.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.039169 -0.053585 0.221883
+                    rotation 0.060309 0.034949 0.997568 2.093353
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 1 1 1 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/antenna_body_3dprint.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.031160 0.048960 0.220910
+                    rotation 0.501140 -0.864835 -0.030297 3.037113
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/dc15_a01_horn_dummy.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.039170 0.053585 0.221882
+                    rotation 0.060017 0.103581 0.992809 1.056637
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 1 1 1 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/antenna_body_3dprint.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.036758 0.052193 0.221590
+                    rotation 0.060017 0.103581 0.992809 1.056637
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0.713725 0.760784 0.8 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/antenna_interface_3dprint.stl" }
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.038545 0.057315 0.281038
+                    rotation -0.412043 0.666452 -0.621340 2.496559
+                    children [
+                      Shape {
+                        appearance PBRAppearance { baseColor 0 0 0 roughness 0.9 metalness 0 }
+                        geometry Mesh { url "ReachyMini_assets/antenna.stl" }
+                      }
+                    ]
+                  }
+                  Camera {
+                    translation 0.039499 0.000000 0.202071
+                    name "head_camera"
+                    fieldOfView 1.3
+                    width 320
+                    height 240
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

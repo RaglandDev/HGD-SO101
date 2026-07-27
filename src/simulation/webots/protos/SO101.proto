@@ -1,0 +1,507 @@
+#VRML_SIM R2023b utf8
+# license: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# This is a proto file for Webots for the SO101
+# Extracted from: /Users/alex/.claude/jobs/d00f1798/tmp/SO-ARM100/Simulation/SO101/so101_new_calib.urdf
+
+PROTO SO101 [
+  field  SFVec3f     translation     0 0 0
+  field  SFRotation  rotation        0 0 1 0
+  field  SFString    name            "SO101"  # Is `Robot.name`.
+  field  SFString    controller      "void"   # Is `Robot.controller`.
+  field  MFString    controllerArgs  []       # Is `Robot.controllerArgs`.
+  field  SFString    customData      ""       # Is `Robot.customData`.
+  field  SFBool      supervisor      FALSE    # Is `Robot.supervisor`.
+  field  SFBool      synchronization TRUE     # Is `Robot.synchronization`.
+  field  SFBool      selfCollision   FALSE    # Is `Robot.selfCollision`.
+  field  MFNode      toolSlot        []       # Extend the robot with new nodes at the end of the arm.
+]
+{
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    controller IS controller
+    controllerArgs IS controllerArgs
+    customData IS customData
+    supervisor IS supervisor
+    synchronization IS synchronization
+    selfCollision IS selfCollision
+    children [
+      Pose {
+        translation -0.006365 -0.000099 -0.002400
+        rotation 0.577350 0.577352 0.577350 2.094399
+        children [
+          Shape {
+            castShadows FALSE
+            appearance DEF so101_printed PBRAppearance {
+              baseColor 0.96 0.76 0.14
+              roughness 1.000000
+              metalness 0
+            }
+            geometry DEF base_motor_holder_so101_v1 Mesh {
+              url "SO101_assets/base_motor_holder_so101_v1.stl"
+            }
+          }
+        ]
+      }
+      Pose {
+        translation -0.006365 -0.000000 -0.002400
+        rotation 0.577350 0.577352 0.577350 2.094399
+        children [
+          Shape {
+            castShadows FALSE
+            appearance USE so101_printed
+            geometry DEF base_so101_v2 Mesh {
+              url "SO101_assets/base_so101_v2.stl"
+            }
+          }
+        ]
+      }
+      Pose {
+        translation 0.026335 -0.000000 0.043700
+        children [
+          Shape {
+            castShadows FALSE
+            appearance DEF sts3215 PBRAppearance {
+              baseColor 0.15 0.15 0.17
+              roughness 1.000000
+              metalness 0
+            }
+            geometry DEF sts3215_03a_v1 Mesh {
+              url "SO101_assets/sts3215_03a_v1.stl"
+            }
+          }
+        ]
+      }
+      Pose {
+        translation -0.030983 -0.000199 0.047400
+        rotation 0.577350 0.577352 0.577350 2.094399
+        children [
+          Shape {
+            castShadows FALSE
+            appearance USE so101_printed
+            geometry DEF waveshare_mounting_plate_so101_v2 Mesh {
+              url "SO101_assets/waveshare_mounting_plate_so101_v2.stl"
+            }
+          }
+        ]
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis -0.000000 0.000003 -1.000000
+          anchor 0.038835 -0.000000 0.062400
+        }
+        device [
+          RotationalMotor {
+            name "shoulder_pan"
+            maxVelocity 10.0
+            minPosition -1.91986
+            maxPosition 1.91986
+            maxTorque 10.0
+          }
+          PositionSensor {
+            name "shoulder_pan_sensor"
+          }
+        ]
+        endPoint Solid {
+          translation 0.038835 -0.000000 0.062400
+          rotation 0.000001 -1.000000 -0.000001 3.141593
+          children [
+            Pose {
+              translation -0.030399 0.000422 -0.041700
+              rotation 0.577350 0.577350 -0.577352 2.094399
+              children [
+                Shape {
+                  castShadows FALSE
+                  appearance USE sts3215
+                  geometry USE sts3215_03a_v1
+                }
+              ]
+            }
+            Pose {
+              translation -0.067599 -0.000178 0.015850
+              rotation 0.577350 -0.577350 0.577352 2.094399
+              children [
+                Shape {
+                  castShadows FALSE
+                  appearance USE so101_printed
+                  geometry DEF motor_holder_so101_base_v1 Mesh {
+                    url "SO101_assets/motor_holder_so101_base_v1.stl"
+                  }
+                }
+              ]
+            }
+            Pose {
+              translation 0.012201 0.000022 0.046400
+              rotation -1.000000 0.000000 0.000000 1.570800
+              children [
+                Shape {
+                  castShadows FALSE
+                  appearance USE so101_printed
+                  geometry DEF rotation_pitch_so101_v1 Mesh {
+                    url "SO101_assets/rotation_pitch_so101_v1.stl"
+                  }
+                }
+              ]
+            }
+            HingeJoint {
+              jointParameters HingeJointParameters {
+                axis 0.000004 1.000000 0.000000
+                anchor -0.030399 -0.018278 -0.054200
+              }
+              device [
+                RotationalMotor {
+                  name "shoulder_lift"
+                  maxVelocity 10.0
+                  minPosition -1.74533
+                  maxPosition 1.74533
+                  maxTorque 10.0
+                }
+                PositionSensor {
+                  name "shoulder_lift_sensor"
+                }
+              ]
+              endPoint Solid {
+                translation -0.030399 -0.018278 -0.054200
+                rotation -0.577350 -0.577350 -0.577352 2.094399
+                children [
+                  Pose {
+                    translation -0.112570 -0.015500 0.018700
+                    rotation -0.707105 0.707108 -0.000001 3.141591
+                    children [
+                      Shape {
+                        castShadows FALSE
+                        appearance USE sts3215
+                        geometry USE sts3215_03a_v1
+                      }
+                    ]
+                  }
+                  Pose {
+                    translation -0.065085 0.012000 0.018200
+                    rotation 1.000000 -0.000000 -0.000000 3.141590
+                    children [
+                      Shape {
+                        castShadows FALSE
+                        appearance USE so101_printed
+                        geometry DEF upper_arm_so101_v1 Mesh {
+                          url "SO101_assets/upper_arm_so101_v1.stl"
+                        }
+                      }
+                    ]
+                  }
+                  HingeJoint {
+                    jointParameters HingeJointParameters {
+                      axis -0.000000 0.000000 1.000000
+                      anchor -0.112570 -0.028000 0.000000
+                    }
+                    device [
+                      RotationalMotor {
+                        name "elbow_flex"
+                        maxVelocity 10.0
+                        minPosition -1.69
+                        maxPosition 1.69
+                        maxTorque 10.0
+                      }
+                      PositionSensor {
+                        name "elbow_flex_sensor"
+                      }
+                    ]
+                    endPoint Solid {
+                      translation -0.112570 -0.028000 0.000000
+                      rotation -0.000000 0.000000 1.000000 1.570800
+                      children [
+                        Pose {
+                          translation -0.064850 -0.032000 0.018200
+                          rotation 1.000000 0.000000 0.000000 3.141590
+                          children [
+                            Shape {
+                              castShadows FALSE
+                              appearance USE so101_printed
+                              geometry DEF under_arm_so101_v1 Mesh {
+                                url "SO101_assets/under_arm_so101_v1.stl"
+                              }
+                            }
+                          ]
+                        }
+                        Pose {
+                          translation -0.064850 -0.032000 0.018000
+                          rotation -1.000000 -0.000000 -0.000000 3.141590
+                          children [
+                            Shape {
+                              castShadows FALSE
+                              appearance USE so101_printed
+                              geometry DEF motor_holder_so101_wrist_v1 Mesh {
+                                url "SO101_assets/motor_holder_so101_wrist_v1.stl"
+                              }
+                            }
+                          ]
+                        }
+                        Pose {
+                          translation -0.122400 0.005200 0.018700
+                          rotation -0.000001 1.000000 -0.000001 3.141593
+                          children [
+                            Shape {
+                              castShadows FALSE
+                              appearance USE sts3215
+                              geometry USE sts3215_03a_v1
+                            }
+                          ]
+                        }
+                        HingeJoint {
+                          jointParameters HingeJointParameters {
+                            axis -0.000000 -0.000000 1.000000
+                            anchor -0.134900 0.005200 0.000000
+                          }
+                          device [
+                            RotationalMotor {
+                              name "wrist_flex"
+                              maxVelocity 10.0
+                              minPosition -1.65806
+                              maxPosition 1.65806
+                              maxTorque 10.0
+                            }
+                            PositionSensor {
+                              name "wrist_flex_sensor"
+                            }
+                          ]
+                          endPoint Solid {
+                            translation -0.134900 0.005200 0.000000
+                            rotation 0.000000 -0.000000 -1.000000 1.570800
+                            children [
+                              Pose {
+                                translation 0.000000 -0.042400 0.030600
+                                rotation 0.577350 0.577350 -0.577352 2.094399
+                                children [
+                                  Shape {
+                                    castShadows FALSE
+                                    appearance USE sts3215
+                                    geometry DEF sts3215_03a_no_horn_v1 Mesh {
+                                      url "SO101_assets/sts3215_03a_no_horn_v1.stl"
+                                    }
+                                  }
+                                ]
+                              }
+                              Pose {
+                                translation 0.000000 -0.028000 0.018100
+                                rotation -0.577350 -0.577350 -0.577352 2.094399
+                                children [
+                                  Shape {
+                                    castShadows FALSE
+                                    appearance USE so101_printed
+                                    geometry DEF wrist_roll_pitch_so101_v2 Mesh {
+                                      url "SO101_assets/wrist_roll_pitch_so101_v2.stl"
+                                    }
+                                  }
+                                ]
+                              }
+                              HingeJoint {
+                                jointParameters HingeJointParameters {
+                                  axis 0.000003 1.000000 -0.000004
+                                  anchor 0.000000 -0.061100 0.018100
+                                }
+                                device [
+                                  RotationalMotor {
+                                    name "wrist_roll"
+                                    maxVelocity 10.0
+                                    minPosition -2.74385
+                                    maxPosition 2.84121
+                                    maxTorque 10.0
+                                  }
+                                  PositionSensor {
+                                    name "wrist_roll_sensor"
+                                  }
+                                ]
+                                endPoint Solid {
+                                  translation 0.000000 -0.061100 0.018100
+                                  rotation -0.017211 0.707003 0.707001 3.107171
+                                  children [
+                                    Pose {
+                                      translation 0.007700 0.000100 -0.023400
+                                      rotation -1.000000 0.000000 -0.000000 1.570800
+                                      children [
+                                        Shape {
+                                          castShadows FALSE
+                                          appearance USE sts3215
+                                          geometry USE sts3215_03a_v1
+                                        }
+                                      ]
+                                    }
+                                    Pose {
+                                      translation 0.000000 -0.000218 0.000950
+                                      rotation -1.000000 -0.000000 -0.000000 3.141590
+                                      children [
+                                        Shape {
+                                          castShadows FALSE
+                                          appearance USE so101_printed
+                                          geometry DEF wrist_roll_follower_so101_v1 Mesh {
+                                            url "SO101_assets/wrist_roll_follower_so101_v1.stl"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                    Solid {
+                                      translation -0.007900 -0.000218 -0.098127
+                                      rotation 0.000000 1.000000 0.000000 3.141590
+                                      children [
+                                        Group {
+                                          children IS toolSlot
+                                        }
+                                      ]
+                                      name "gripper_frame_link"
+                                    }
+                                    HingeJoint {
+                                      jointParameters HingeJointParameters {
+                                        axis 0.000000 -1.000000 -0.000004
+                                        anchor 0.020200 0.018800 -0.023400
+                                      }
+                                      device [
+                                        RotationalMotor {
+                                          name "gripper"
+                                          maxVelocity 10.0
+                                          minPosition -0.174533
+                                          maxPosition 1.74533
+                                          maxTorque 10.0
+                                        }
+                                        PositionSensor {
+                                          name "gripper_sensor"
+                                        }
+                                      ]
+                                      endPoint Solid {
+                                        translation 0.020200 0.018800 -0.023400
+                                        rotation 1.000000 -0.000000 0.000000 1.570800
+                                        children [
+                                          Pose {
+                                            translation -0.000000 -0.000000 0.018900
+                                            children [
+                                              Shape {
+                                                castShadows FALSE
+                                                appearance USE so101_printed
+                                                geometry DEF moving_jaw_so101_v1 Mesh {
+                                                  url "SO101_assets/moving_jaw_so101_v1.stl"
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                        name "moving_jaw_so101_v1_link"
+                                        boundingObject USE moving_jaw_so101_v1
+                                        physics Physics {
+                                          density -1
+                                          mass 0.012000
+                                          centerOfMass [ -0.001575 -0.030024 0.019276 ]
+                                          inertiaMatrix [
+                                            6.614270e-06 1.890320e-06 5.287380e-06
+                                            -3.198070e-07 -5.907170e-09 -1.099450e-07
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  ]
+                                  name "gripper_link"
+                                  boundingObject Group {
+                                    children [
+                                      USE sts3215_03a_v1
+                                      USE wrist_roll_follower_so101_v1
+                                    ]
+                                  }
+                                  physics Physics {
+                                    density -1
+                                    mass 0.087000
+                                    centerOfMass [ 0.000214 0.000245 -0.025187 ]
+                                    inertiaMatrix [
+                                      2.750870e-05 4.336570e-05 3.450590e-05
+                                      -3.352410e-07 -5.735200e-06 -5.178470e-08
+                                    ]
+                                  }
+                                }
+                              }
+                            ]
+                            name "wrist_link"
+                            boundingObject Group {
+                              children [
+                                USE sts3215_03a_no_horn_v1
+                                USE wrist_roll_pitch_so101_v2
+                              ]
+                            }
+                            physics Physics {
+                              density -1
+                              mass 0.079000
+                              centerOfMass [ -0.000103 -0.038614 0.028116 ]
+                              inertiaMatrix [
+                                3.682630e-05 2.539100e-05 2.100000e-05
+                                1.789300e-08 -5.281280e-08 3.641200e-06
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                      name "lower_arm_link"
+                      boundingObject Group {
+                        children [
+                          USE under_arm_so101_v1
+                          USE motor_holder_so101_wrist_v1
+                          USE sts3215_03a_v1
+                        ]
+                      }
+                      physics Physics {
+                        density -1
+                        mass 0.104000
+                        centerOfMass [ -0.098070 0.003244 0.018283 ]
+                        inertiaMatrix [
+                          2.874380e-05 1.598440e-04 1.452900e-04
+                          7.411520e-06 1.264090e-06 -4.901880e-08
+                        ]
+                      }
+                    }
+                  }
+                ]
+                name "upper_arm_link"
+                boundingObject Group {
+                  children [
+                    USE sts3215_03a_v1
+                    USE upper_arm_so101_v1
+                  ]
+                }
+                physics Physics {
+                  density -1
+                  mass 0.103000
+                  centerOfMass [ -0.089847 -0.008382 0.018409 ]
+                  inertiaMatrix [
+                    4.080020e-05 1.473180e-04 1.424870e-04
+                    -1.978190e-05 -4.030160e-08 8.973260e-09
+                  ]
+                }
+              }
+            }
+          ]
+          name "shoulder_link"
+          boundingObject Group {
+            children [
+              USE sts3215_03a_v1
+              USE motor_holder_so101_base_v1
+              USE rotation_pitch_so101_v1
+            ]
+          }
+          physics Physics {
+            density -1
+            mass 0.100006
+            centerOfMass [ -0.030760 -0.000017 -0.025271 ]
+            inertiaMatrix [
+              8.375900e-05 8.104030e-05 2.397830e-05
+              7.555250e-08 -1.163420e-06 1.546630e-07
+            ]
+          }
+        }
+      }
+    ]
+    name IS name
+    boundingObject Group {
+      children [
+        USE base_motor_holder_so101_v1
+        USE base_so101_v2
+        USE sts3215_03a_v1
+        USE waveshare_mounting_plate_so101_v2
+      ]
+    }
+  }
+}
