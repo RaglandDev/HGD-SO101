@@ -4,6 +4,7 @@ networks:
 
 services:
   web_input_bridge:
+    restart: unless-stopped
     build: 
       context: ./src/web_bridge
     ports:
@@ -14,6 +15,7 @@ services:
       - ./src/web_bridge:/app
 
   perception_processor:
+    restart: unless-stopped
     build: 
       context: ./src/perception
     networks:
@@ -24,6 +26,7 @@ services:
       - web_input_bridge
 
   simulation_control:
+    restart: unless-stopped
     platform: linux/amd64    
     build: 
       context: ./src/simulation
@@ -38,6 +41,7 @@ services:
     shm_size: '2gb' 
 
   triage_supervisor:
+    restart: unless-stopped
     build:
       context: ./src/triage
     networks:

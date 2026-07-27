@@ -23,7 +23,7 @@
         <span class="stat" id="gesture-stat">gesture: —</span>
         <span class="stat" id="arm-stat">arm: —</span>
         <span class="stat" id="conn-stat">connecting…</span>
-        <button id="toggleBtn">Enable Visualization</button>
+        <button id="resetBtn">Reset Scene</button>
     </div>
 
     <main>
@@ -31,12 +31,11 @@
             <h2>You (webcam → perception)</h2>
             <div id="container">
                 <video id="video" width="640" height="480" autoplay muted playsinline></video>
-                <canvas id="overlay" width="640" height="480"></canvas>
             </div>
         </section>
 
         <section class="panel">
-            <h2>Reachy Mini POV (sim camera)</h2>
+            <h2>Reachy Mini POV (mirrored)</h2>
             <img id="pov" src="" alt="Reachy POV stream (starts with the simulation)">
         </section>
 

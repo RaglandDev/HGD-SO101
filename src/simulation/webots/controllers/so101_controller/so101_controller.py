@@ -104,6 +104,12 @@ class So101Controller(Node):
 
         self.grip_site = robot.getFromDef("GRIP_SITE")
         self.cubes = {c: robot.getFromDef(d) for c, d in CUBE_DEFS.items()}
+        # remember spawn poses so the scene can be reset from the web UI
+        self.cube_home = {
+            c: (node.getField("translation").getSFVec3f(),
+                node.getField("rotation").getSFRotation())
+            for c, node in self.cubes.items() if node is not None
+        }
 
         self.state = "IDLE"
         self.phase = None
@@ -118,6 +124,7 @@ class So101Controller(Node):
 
         self.create_subscription(String, "/so101/pick_cmd", self.on_pick, 10)
         self.create_subscription(String, "/so101/stop", self.on_stop, 10)
+        self.create_subscription(String, "/sim/reset", self.on_reset, 10)
         self.state_pub = self.create_publisher(String, "/so101/state", 10)
         self.joint_pub = self.create_publisher(JointState, "/joint_states", 10)
 
@@ -155,6 +162,24 @@ class So101Controller(Node):
             ("HOME",     self.home[:4], GRIPPER_OPEN, 1.4, None),
         ]
         self.next_phase()
+
+    def on_reset(self, _msg):
+        self.get_logger().info("scene reset requested")
+        self.detach()
+        self.plan = []
+        self.picking = None
+        for color, node in self.cubes.items():
+            if node is None or color not in self.cube_home:
+                continue
+            home_t, home_r = self.cube_home[color]
+            node.getField("translation").setSFVec3f(list(home_t))
+            node.getField("rotation").setSFRotation(list(home_r))
+            node.resetPhysics()
+        self.set_arm(self.home)
+        self.set_gripper(GRIPPER_OPEN)
+        self.phase_end = self.robot.getTime() + 1.5
+        self.state = "STOPPING"
+        self.phase = "RESET"
 
     def on_stop(self, _msg):
         self.get_logger().warn("STOP received - aborting and homing")

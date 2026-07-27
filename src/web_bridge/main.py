@@ -14,6 +14,7 @@ HTML_PATH = os.path.join(BASE_DIR, "index.html")
 app.mount("/static", StaticFiles(directory=BASE_DIR), name="static")
 
 frame_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+control_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 gaze_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 gaze_socket.bind(("0.0.0.0", 9998))
@@ -43,8 +44,20 @@ async def websocket_endpoint(websocket: WebSocket):
     print("WebSocket connected.")
     try:
         while True:
-            data = await websocket.receive_bytes()
-            frame_socket.sendto(data, ("127.0.0.1", 9999))
+            data = await websocket.receive()
+            if data.get("type") == "websocket.disconnect":
+                break
+            if data.get("bytes"):
+                # webcam frame -> ROS image bridge
+                frame_socket.sendto(data["bytes"], ("127.0.0.1", 9999))
+            elif data.get("text"):
+                # control message from the UI (e.g. scene reset)
+                try:
+                    cmd = json.loads(data["text"])
+                except json.JSONDecodeError:
+                    continue
+                if cmd.get("t") == "reset":
+                    control_socket.sendto(b"RESET", ("127.0.0.1", 9996))
     except WebSocketDisconnect:
         print("WebSocket disconnected.")
     finally:
