@@ -225,24 +225,32 @@ private:
     int best = find_best_anchor(d);
     if (best >= 0) {
       // ==========================================
-      // GESTURE LOGIC: "Hand Raised"
+      // GESTURE LOGIC: "Hand Above Head"
       // ==========================================
       constexpr int NA = 8400;
       auto get_kpy = [&](int kp) { return d[(5 + kp * 3 + 1) * NA + best]; };
       auto get_kpv = [&](int kp) { return d[(5 + kp * 3 + 2) * NA + best]; };
 
-      // COCO keypoints: 5/6 = shoulders, 7/8 = elbows, 9/10 = wrists.
-      // A side counts as raised when its wrist OR elbow is above the
-      // shoulder; low-res webcam frames often lose the wrist, so the elbow
-      // fallback and low confidence thresholds keep detection usable.
-      auto raised_side = [&](int shoulder, int elbow, int wrist) {
-        if (get_kpv(shoulder) < 0.25f) return false;
-        float shoulder_y = get_kpy(shoulder);
-        bool wrist_up = get_kpv(wrist) > 0.20f && get_kpy(wrist) < shoulder_y;
-        bool elbow_up = get_kpv(elbow) > 0.25f && get_kpy(elbow) < shoulder_y;
+      // COCO keypoints: 0 nose, 1/2 eyes, 7/8 elbows, 9/10 wrists.
+      // Reference the raise against the eye/nose line rather than the
+      // shoulders: the face keypoints are detected far more reliably than
+      // wrists at webcam resolution, and "wrist above the eyes" is a large,
+      // unambiguous displacement that survives keypoint noise. The elbow is
+      // a fallback for frames where the raised wrist drops out.
+      float ref_y = 0.0f;
+      float ref_v = 0.0f;
+      for (int fk : {0, 1, 2}) {   // nose, left eye, right eye
+        if (get_kpv(fk) > ref_v) { ref_v = get_kpv(fk); ref_y = get_kpy(fk); }
+      }
+      bool have_face = ref_v > 0.3f;
+
+      auto raised_side = [&](int elbow, int wrist) {
+        bool wrist_up = get_kpv(wrist) > 0.20f && get_kpy(wrist) < ref_y;
+        bool elbow_up = get_kpv(elbow) > 0.25f && get_kpy(elbow) < ref_y;
         return wrist_up || elbow_up;
       };
-      bool raw_raised = raised_side(5, 7, 9) || raised_side(6, 8, 10);
+      bool raw_raised = have_face &&
+          (raised_side(7, 9) || raised_side(8, 10));
 
       // Temporal smoothing: majority vote over the last 5 frames removes
       // single-frame flicker that would otherwise reset the gesture
@@ -258,9 +266,9 @@ private:
 
       RCLCPP_INFO_THROTTLE(
           this->get_logger(), *this->get_clock(), 1000,
-          "Gesture: %s (raw=%d votes=%d L_wr=%.2f R_wr=%.2f L_el=%.2f R_el=%.2f)",
+          "Gesture: %s (raw=%d votes=%d face_y=%.0f L_wr=%.2f R_wr=%.2f)",
           gesture_msg.data.c_str(), raw_raised, raised_count,
-          get_kpv(9), get_kpv(10), get_kpv(7), get_kpv(8));
+          ref_y, get_kpv(9), get_kpv(10));
       // ==========================================
       std::vector<cv::Point2d> img_pts;
       std::vector<cv::Point3d> obj_pts;

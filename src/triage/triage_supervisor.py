@@ -168,7 +168,7 @@ class TriageSupervisor(Node):
         elif self.selected is None:
             msg_txt = "look toward a cube to select it"
         elif armed:
-            msg_txt = f"{self.selected} selected - raise a hand to pick"
+            msg_txt = f"{self.selected} selected - raise a hand above your head to pick"
         else:
             msg_txt = "arm getting ready..."
 

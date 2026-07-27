@@ -24,9 +24,9 @@ top-down grasp. Everything runs in Docker.
 4. **Look toward a cube** (left / center / right) — the matching chip in the
    status bar lights up after ~0.7 s of dwell, and the Reachy Mini head turns
    toward that cube
-5. **Raise your hand** (wrist or elbow above shoulder) — one raise triggers
-   one pick: the SO-101 grabs the selected cube and drops it on the tray
-   while you relax. The banner at the top tells you what to do next.
+5. **Raise a hand above your head** — one raise triggers one pick: the SO-101
+   grabs the selected cube and drops it on the tray while you relax. The
+   banner at the top tells you what to do next.
 6. **Reset Scene** puts the cubes back so you can go again.
 
 If left/right selection feels mirrored on your webcam, flip `GAZE_YAW_SIGN`
