@@ -151,23 +151,23 @@ function updateStatus(d) {
     if (d.topics) renderTopics(d.topics);
     renderRecording(d.recording);
     for (var c in chips) {
-        chips[c].classList.toggle('gazed', d.zone === c);
+        chips[c].classList.toggle('looking', d.zone === c);
         chips[c].classList.toggle('selected', d.selected === c);
     }
     gestureStat.textContent = 'gesture: ' + (d.gesture || '—');
     gestureStat.classList.toggle('active', d.gesture === 'HAND_RAISED');
     armStat.textContent = 'arm: ' + (d.arm || '—');
     armStat.classList.toggle('active', !!d.arm && d.arm !== 'IDLE');
-    connStat.textContent = d.gaze_fresh
-        ? ('gaze yaw ' + d.yaw_deg + '°')
+    connStat.textContent = d.head_pose_fresh
+        ? ('head yaw ' + d.yaw_deg + '°')
         : 'no face detected';
 }
 
 ws.onmessage = function (e) {
     try {
         var m = JSON.parse(e.data);
-        if (m.t === "gaze") {
-            // gaze replies pace the webcam upload loop: send the next frame
+        if (m.t === "head_pose") {
+            // head_pose replies pace the webcam upload loop: send the next frame
             // as soon as perception finished with the previous one
             if (pending) {
                 pending = false;

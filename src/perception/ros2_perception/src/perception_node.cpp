@@ -26,7 +26,7 @@ public:
     session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
     ort_session_ = std::make_unique<Ort::Session>(ort_env_, "/models/yolov8n-pose.onnx", session_options);
 
-    gaze_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("/human/gaze", 10);
+    head_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("/human/head_pose", 10);
     gesture_pub_ = this->create_publisher<std_msgs::msg::String>("/human/gesture", 10);
     image_sub_ = this->create_subscription<sensor_msgs::msg::CompressedImage>(
         "/human/camera/compressed", 10,
@@ -167,7 +167,7 @@ private:
   }
 
   void process_and_send_outputs(const cv::Mat& cam, const cv::Mat& dist, const cv::Mat& tvec, 
-                                size_t kp_count, geometry_msgs::msg::PoseStamped& gaze) {
+                                size_t kp_count, geometry_msgs::msg::PoseStamped& head_pose) {
     std::vector<cv::Point3d> proj_pts = {
         cv::Point3d(35, -35, 25), cv::Point3d(35, -35, -275),
         cv::Point3d(-35, -35, 25), cv::Point3d(-35, -35, -275)
@@ -196,27 +196,27 @@ private:
         smoothed_rvec_.at<double>(0), smoothed_rvec_.at<double>(1), smoothed_rvec_.at<double>(2),
         static_cast<int>(kp_count));
 
-    gaze.pose.position.x = proj2d[0].x;
-    gaze.pose.position.y = proj2d[0].y;
-    gaze.pose.position.z = tvec.at<double>(2);
+    head_pose.pose.position.x = proj2d[0].x;
+    head_pose.pose.position.y = proj2d[0].y;
+    head_pose.pose.position.z = tvec.at<double>(2);
 
     double cy2 = cos(yaw * .5), sy2 = sin(yaw * .5);
     double cp = cos(pitch * .5), sp = sin(pitch * .5);
     double cr = cos(roll * .5), sr = sin(roll * .5);
-    gaze.pose.orientation.w = cr * cp * cy2 + sr * sp * sy2;
-    gaze.pose.orientation.x = sr * cp * cy2 - cr * sp * sy2;
-    gaze.pose.orientation.y = cr * sp * cy2 + sr * cp * sy2;
-    gaze.pose.orientation.z = cr * cp * sy2 - sr * sp * cy2;
+    head_pose.pose.orientation.w = cr * cp * cy2 + sr * sp * sy2;
+    head_pose.pose.orientation.x = sr * cp * cy2 - cr * sp * sy2;
+    head_pose.pose.orientation.y = cr * sp * cy2 + sr * cp * sy2;
+    head_pose.pose.orientation.z = cr * cp * sy2 - sr * sp * cy2;
   }
 
   void image_callback(const sensor_msgs::msg::CompressedImage::SharedPtr msg) {
     cv::Mat frame = cv::imdecode(msg->data, cv::IMREAD_COLOR);
     if (frame.empty()) return;
 
-    geometry_msgs::msg::PoseStamped gaze;
-    gaze.header.stamp = this->now();
-    gaze.header.frame_id = "camera_optical_frame";
-    gaze.pose.orientation.w = 1.0;
+    geometry_msgs::msg::PoseStamped head_pose;
+    head_pose.header.stamp = this->now();
+    head_pose.header.frame_id = "camera_optical_frame";
+    head_pose.pose.orientation.w = 1.0;
 
     cv::Mat blob;
     auto out_tensors = run_inference(frame, blob);
@@ -254,7 +254,7 @@ private:
 
       // Temporal smoothing: majority vote over the last 5 frames removes
       // single-frame flicker that would otherwise reset the gesture
-      // debounce in the triage supervisor.
+      // debounce in the supervisor.
       raised_history_.push_back(raw_raised);
       if (raised_history_.size() > 5) raised_history_.pop_front();
       int raised_count = std::count(raised_history_.begin(), raised_history_.end(), true);
@@ -277,16 +277,16 @@ private:
       if (img_pts.size() >= 4) {
         cv::Mat rvec, tvec, cam, dist;
         if (estimate_head_pose(img_pts, obj_pts, frame.cols, frame.rows, rvec, tvec, cam, dist)) {
-          process_and_send_outputs(cam, dist, tvec, img_pts.size(), gaze);
+          process_and_send_outputs(cam, dist, tvec, img_pts.size(), head_pose);
         }
       }
     }
-    gaze_pub_->publish(gaze);
+    head_pose_pub_->publish(head_pose);
   }
 
   Ort::Env ort_env_;
   std::unique_ptr<Ort::Session> ort_session_;
-  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr gaze_pub_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr head_pose_pub_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr gesture_pub_;
   rclcpp::Subscription<sensor_msgs::msg::CompressedImage>::SharedPtr image_sub_;
   

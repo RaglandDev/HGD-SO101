@@ -69,7 +69,7 @@ header h1 {
 #chip-green { border-color: #3fbf4e; }
 #chip-blue { border-color: #4477e0; }
 
-.chip.gazed { opacity: 0.85; }
+.chip.looking { opacity: 0.85; }
 
 .chip.selected {
     opacity: 1;
@@ -92,7 +92,7 @@ header h1 {
     font-weight: bold;
 }
 
-/* fixed width + tabular figures so the gaze readout doesn't resize as the
+/* fixed width + tabular figures so the head-pose readout doesn't resize as the
    number (or "no face detected") changes */
 #conn-stat {
     display: inline-block;

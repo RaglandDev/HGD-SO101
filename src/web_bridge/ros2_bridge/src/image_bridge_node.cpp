@@ -16,7 +16,7 @@ public:
         control_pub_ = this->create_publisher<std_msgs::msg::String>("/sys/control", 10);
 
         status_sub_ = this->create_subscription<std_msgs::msg::String>(
-            "/sys/triage_status", 10,
+            "/sys/status", 10,
             [this](const std_msgs::msg::String::SharedPtr msg) { forward_status(msg->data); });
 
         server_fd_ = socket(AF_INET, SOCK_DGRAM, 0); // udp
@@ -28,7 +28,7 @@ public:
 
         bind(server_fd_, (struct sockaddr*)&address, sizeof(address));
 
-        // outbound socket: forwards triage status JSON to the web server
+        // outbound socket: forwards supervisor status JSON to the web server
         status_fd_ = socket(AF_INET, SOCK_DGRAM, 0);
         status_addr_.sin_family = AF_INET;
         status_addr_.sin_port = htons(9997);

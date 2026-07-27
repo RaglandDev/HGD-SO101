@@ -42,15 +42,15 @@ services:
     # CRITICAL: Required for 3D software rendering (Webots + Xvfb)
     shm_size: '2gb' 
 
-  triage_supervisor:
+  supervisor:
     restart: unless-stopped
     build:
-      context: ./src/triage
+      context: ./src/supervisor
     networks:
       - shared_autonomy_net
     environment:
       # flip if left/right selection feels mirrored on your webcam
-      - GAZE_YAW_SIGN=-1
+      - HEAD_YAW_SIGN=-1
     volumes:
       # MCAP session recordings land here on the host (Foxglove-ready)
       - ./recordings:/recordings

@@ -2,7 +2,7 @@
 <package format="3">
   <name>ros2_perception</name>
   <version>0.0.0</version>
-  <description>Perception Node for Gaze and Gestures</description>
+  <description>Perception node for head pose and gestures</description>
   <maintainer email="alex.d.ragland@gmail.com">RaglandDev</maintainer>
   <license>MIT</license>
 

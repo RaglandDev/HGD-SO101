@@ -6,7 +6,7 @@ EXTERNPROTO "../protos/SO101.proto"
 EXTERNPROTO "../protos/ReachyMini.proto"
 
 WorldInfo {
-  title "Gesture-and-Gaze-Directed SO-101 via Reachy Mini"
+  title "Head-Pose-and-Gesture-Directed SO-101 via Reachy Mini"
   basicTimeStep 32
   FPS 20
 }

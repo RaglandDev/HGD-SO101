@@ -77,9 +77,9 @@ async def download_recording(name: str):
 frame_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 control_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-gaze_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-gaze_socket.bind(("0.0.0.0", 9998))
-gaze_socket.setblocking(False)
+head_pose_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+head_pose_socket.bind(("0.0.0.0", 9998))
+head_pose_socket.setblocking(False)
 
 status_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 status_socket.bind(("0.0.0.0", 9997))
@@ -147,19 +147,19 @@ async def broadcast(msg: str):
 
 @app.on_event("startup")
 async def start_relays():
-    asyncio.create_task(gaze_relay_loop())
+    asyncio.create_task(head_pose_relay_loop())
     asyncio.create_task(status_relay_loop())
 
 
-async def gaze_relay_loop():
+async def head_pose_relay_loop():
     loop = asyncio.get_event_loop()
     while True:
         try:
-            data = await loop.run_in_executor(None, lambda: gaze_socket.recv(1024))
+            data = await loop.run_in_executor(None, lambda: head_pose_socket.recv(1024))
             parts = data.decode("utf-8").split(",")
             if len(parts) == 11:
                 msg = json.dumps({
-                    "t": "gaze",
+                    "t": "head_pose",
                     "lex": float(parts[0]), "ley": float(parts[1]),
                     "lax": float(parts[2]), "lay": float(parts[3]),
                     "rex": float(parts[4]), "rey": float(parts[5]),

@@ -1,8 +1,8 @@
-"""Triage / shared-autonomy supervisor.
+"""Shared-autonomy supervisor.
 
 Bridges human perception to the simulated robots:
 
-  - subscribes /human/gaze (geometry_msgs/PoseStamped, head pose from webcam)
+  - subscribes /human/head_pose (geometry_msgs/PoseStamped, head pose from webcam)
   - subscribes /human/gesture (std_msgs/String: "HAND_RAISED" | "DEFAULT")
   - subscribes /so101/state (std_msgs/String, arm state machine feedback)
 
@@ -10,10 +10,10 @@ Bridges human perception to the simulated robots:
     Reachy Mini head looks at whatever object the human is looking at
   - publishes /so101/pick_cmd (std_msgs/String) when the human confirms with a
     raised hand
-  - publishes /sys/triage_status (std_msgs/String, JSON) for the web UI,
+  - publishes /sys/status (std_msgs/String, JSON) for the web UI,
     including a live telemetry snapshot of every pipeline topic
 
-Selection logic: the human's head yaw is quantized into three gaze zones
+Selection logic: the human's head yaw is quantized into three zones
 (left / center / right -> red / green / blue cube). A zone held for DWELL_S
 seconds becomes the selected object. A raised hand held for GESTURE_HOLD_S
 seconds triggers the pick, with a cooldown while the arm is busy.
@@ -42,21 +42,23 @@ from std_msgs.msg import String
 MONITORED_TOPICS = [
     ("/human/camera/compressed", CompressedImage, lambda m: f"{len(m.data)//1024} KB JPEG",
      "Webcam frames from the browser (WebSocket -> UDP -> ROS 2)"),
-    ("/human/gaze", PoseStamped, lambda m: "head pose",
+    ("/human/head_pose", PoseStamped, lambda m: "head pose",
      "Head pose estimated by the C++ perception node (YOLOv8-pose + solvePnP)"),
     ("/human/gesture", String, lambda m: m.data,
      "Raised-hand gesture classification (HAND_RAISED / DEFAULT)"),
     ("/reachy/neck_cmd", Vector3, lambda m: f"yaw {m.x:+.2f} pitch {m.y:+.2f}",
-     "Neck command so Reachy Mini turns toward the gazed object"),
+     "Neck command so Reachy Mini turns toward the looked-at object"),
     ("/reachy/camera/compressed", CompressedImage, lambda m: f"{len(m.data)//1024} KB JPEG",
      "Reachy Mini head-camera POV stream"),
     ("/so101/pick_cmd", String, lambda m: m.data,
      "Pickup command, issued the instant a gesture is confirmed"),
     ("/so101/state", String, lambda m: m.data,
      "SO-101 pick state machine (IDLE, PICK:color:phase)"),
-    ("/joint_states", JointState, lambda m: f"{len(m.name)} joints",
-     "Live joint angles streamed by both robot controllers"),
-    ("/sys/triage_status", String, lambda m: "JSON",
+    ("/reachy/joint_states", JointState, lambda m: f"{len(m.name)} joints",
+     "Reachy Mini neck joint angles"),
+    ("/so101/joint_states", JointState, lambda m: f"{len(m.name)} joints",
+     "SO-101 arm joint angles"),
+    ("/sys/status", String, lambda m: "JSON",
      "This supervisor's status feed powering the demo page"),
 ]
 
@@ -99,7 +101,7 @@ class TopicMonitor:
 OBJECT_BEARINGS = {"red": -0.25, "green": 0.0, "blue": 0.25}   # rad
 TABLE_PITCH = 0.32                                             # rad, look down
 
-YAW_SIGN = float(os.environ.get("GAZE_YAW_SIGN", "1"))
+YAW_SIGN = float(os.environ.get("HEAD_YAW_SIGN", "1"))
 ZONE_ENTER_DEG = float(os.environ.get("ZONE_ENTER_DEG", "12"))
 ZONE_EXIT_DEG = float(os.environ.get("ZONE_EXIT_DEG", "8"))
 DWELL_S = float(os.environ.get("DWELL_S", "0.4"))
@@ -107,7 +109,7 @@ GESTURE_HOLD_S = float(os.environ.get("GESTURE_HOLD_S", "0.2"))
 COOLDOWN_S = float(os.environ.get("COOLDOWN_S", "2.5"))
 RECORDINGS_DIR = os.environ.get("RECORDINGS_DIR", "/recordings")
 MAX_RECORDINGS = int(os.environ.get("MAX_RECORDINGS", "5"))
-GAZE_TIMEOUT_S = 1.5
+HEAD_POSE_TIMEOUT_S = 1.5
 
 
 def quat_to_yaw_pitch(q):
@@ -118,14 +120,14 @@ def quat_to_yaw_pitch(q):
     return yaw, pitch
 
 
-class TriageSupervisor(Node):
+class Supervisor(Node):
     def __init__(self):
-        super().__init__("triage_supervisor")
+        super().__init__("supervisor")
 
         self.yaw_deg = 0.0
         self.pitch_deg = 0.0
-        self.last_gaze_time = 0.0
-        self.zone = None            # instantaneous gaze zone
+        self.last_head_pose_time = 0.0
+        self.zone = None            # instantaneous head_pose zone
         self.zone_since = 0.0
         self.selected = None        # dwelled selection
         self.gesture = "DEFAULT"
@@ -134,13 +136,13 @@ class TriageSupervisor(Node):
         self.arm_state = "UNKNOWN"
         self.last_trigger = 0.0
 
-        self.create_subscription(PoseStamped, "/human/gaze", self.on_gaze, 10)
+        self.create_subscription(PoseStamped, "/human/head_pose", self.on_head_pose, 10)
         self.create_subscription(String, "/human/gesture", self.on_gesture, 10)
         self.create_subscription(String, "/so101/state", self.on_arm_state, 10)
 
         self.neck_pub = self.create_publisher(Vector3, "/reachy/neck_cmd", 10)
         self.pick_pub = self.create_publisher(String, "/so101/pick_cmd", 10)
-        self.status_pub = self.create_publisher(String, "/sys/triage_status", 10)
+        self.status_pub = self.create_publisher(String, "/sys/status", 10)
 
         self.topic_monitor = TopicMonitor(self)
 
@@ -196,17 +198,17 @@ class TriageSupervisor(Node):
                 self.get_logger().info(f"pruned old recording {os.path.basename(old)}")
             except OSError as e:
                 self.get_logger().warn(f"could not prune {old}: {e}")
-        self.get_logger().info("Triage supervisor ready")
+        self.get_logger().info("Supervisor ready")
 
     # --- inputs -------------------------------------------------------------
-    def on_gaze(self, msg):
+    def on_head_pose(self, msg):
         q = msg.pose.orientation
         if q.w == 1.0 and q.x == 0.0 and q.y == 0.0 and q.z == 0.0:
             return  # identity = no face detected this frame
         yaw, pitch = quat_to_yaw_pitch(q)
         self.yaw_deg = math.degrees(yaw) * YAW_SIGN
         self.pitch_deg = math.degrees(pitch)
-        self.last_gaze_time = time.monotonic()
+        self.last_head_pose_time = time.monotonic()
         self.update_zone()
 
     def update_zone(self):
@@ -248,7 +250,7 @@ class TriageSupervisor(Node):
     # --- main loop ----------------------------------------------------------
     def tick(self):
         now = time.monotonic()
-        gaze_fresh = (now - self.last_gaze_time) < GAZE_TIMEOUT_S
+        head_pose_fresh = (now - self.last_head_pose_time) < HEAD_POSE_TIMEOUT_S
 
         # forget a recorder that exited on its own (e.g. disk error)
         if self.rec_proc is not None and self.rec_proc.poll() is not None:
@@ -256,16 +258,16 @@ class TriageSupervisor(Node):
             self.rec_name = None
             self.prune_recordings()
 
-        if gaze_fresh and self.zone is not None:
+        if head_pose_fresh and self.zone is not None:
             if now - self.zone_since >= DWELL_S:
                 self.selected = self.zone
-        elif not gaze_fresh:
+        elif not head_pose_fresh:
             self.zone = None
             self.selected = None
 
-        # reachy head: look at the object zone currently gazed at (or neutral)
+        # reachy head: look at the object zone currently looked at (or neutral)
         neck = Vector3()
-        if gaze_fresh and self.zone is not None:
+        if head_pose_fresh and self.zone is not None:
             neck.x = OBJECT_BEARINGS[self.zone]
             neck.y = TABLE_PITCH
             self.neck_pub.publish(neck)
@@ -288,7 +290,7 @@ class TriageSupervisor(Node):
             triggered = True
             self.get_logger().info(f"PICK triggered: {self.selected}")
 
-        if not gaze_fresh:
+        if not head_pose_fresh:
             msg_txt = "no face detected - look at the camera"
         elif self.arm_state.startswith("PICK"):
             color = self.arm_state.split(":")[1] if ":" in self.arm_state else ""
@@ -301,7 +303,7 @@ class TriageSupervisor(Node):
             msg_txt = "arm getting ready..."
 
         status = {
-            "gaze_fresh": gaze_fresh,
+            "head_pose_fresh": head_pose_fresh,
             "yaw_deg": round(self.yaw_deg, 1),
             "pitch_deg": round(self.pitch_deg, 1),
             "zone": self.zone,
@@ -320,7 +322,7 @@ class TriageSupervisor(Node):
 
 def main():
     rclpy.init()
-    node = TriageSupervisor()
+    node = Supervisor()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
