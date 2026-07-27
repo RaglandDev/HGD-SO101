@@ -42,11 +42,55 @@ recordBtn.onclick = function () {
     ws.send(JSON.stringify({ t: 'record', action: isRecording ? 'stop' : 'start' }));
 };
 
+var wasRecording = false;
 function renderRecording(rec) {
     isRecording = !!rec;
     recordBtn.classList.toggle('recording', isRecording);
     recordBtn.textContent = isRecording ? '■ Stop' : '● Record';
+    // when a recording finishes, refresh the list so the new file appears
+    if (wasRecording && !isRecording) {
+        setTimeout(loadRecordings, 800);
+    }
+    wasRecording = isRecording;
 }
+
+var recordingsBody = document.getElementById('recordings-body');
+
+function humanSize(b) {
+    if (b > 1048576) return (b / 1048576).toFixed(1) + ' MB';
+    if (b > 1024) return (b / 1024).toFixed(0) + ' KB';
+    return b + ' B';
+}
+
+function loadRecordings() {
+    fetch('/recordings').then(function (r) { return r.json(); }).then(function (list) {
+        if (!list.length) {
+            recordingsBody.innerHTML =
+                '<tr><td colspan="6" class="muted">no recordings yet — hit ● Record above</td></tr>';
+            return;
+        }
+        var rows = '';
+        for (var i = 0; i < list.length; i++) {
+            var r = list[i];
+            var url = location.origin + '/recordings/' + encodeURIComponent(r.name);
+            var fox = 'https://app.foxglove.dev/~/view?ds=remote-file&ds.url='
+                + encodeURIComponent(url);
+            rows += '<tr>'
+                + '<td class="mono">' + r.name + '</td>'
+                + '<td>' + (r.duration_s != null ? r.duration_s + ' s' : '—') + '</td>'
+                + '<td>' + (r.messages != null ? r.messages : '—') + '</td>'
+                + '<td>' + (r.topics != null ? r.topics : '—') + '</td>'
+                + '<td>' + humanSize(r.size_bytes) + '</td>'
+                + '<td class="rec-actions">'
+                + '<a href="' + url + '" download>Download</a>'
+                + '<a href="' + fox + '" target="_blank" rel="noopener">Foxglove ↗</a>'
+                + '</td>'
+                + '</tr>';
+        }
+        recordingsBody.innerHTML = rows;
+    }).catch(function () { });
+}
+loadRecordings();
 
 navigator.mediaDevices.getUserMedia({ video: true })
     .then(function (s) { video.srcObject = s; })

@@ -1,17 +1,78 @@
 import socket
 import os
+import glob
 import asyncio
 import json
-from fastapi import FastAPI, WebSocket
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, WebSocket, HTTPException
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.websockets import WebSocketDisconnect
 
 app = FastAPI()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HTML_PATH = os.path.join(BASE_DIR, "index.html")
+RECORDINGS_DIR = os.environ.get("RECORDINGS_DIR", "/recordings")
 
 app.mount("/static", StaticFiles(directory=BASE_DIR), name="static")
+
+
+def _read_bag_meta(session_dir):
+    """Pull duration / message / topic counts from a rosbag2 metadata.yaml
+    without a YAML dependency (the file is simple and predictable)."""
+    meta = {"duration_s": None, "messages": None, "topics": None}
+    path = os.path.join(session_dir, "metadata.yaml")
+    try:
+        with open(path) as f:
+            text = f.read()
+    except OSError:
+        return meta
+    import re
+    dur = re.search(r"duration:\s*\n\s*nanoseconds:\s*(\d+)", text)
+    if dur:
+        meta["duration_s"] = round(int(dur.group(1)) / 1e9, 1)
+    msg = re.search(r"message_count:\s*(\d+)", text)
+    if msg:
+        meta["messages"] = int(msg.group(1))
+    meta["topics"] = len(re.findall(r"topic_metadata:", text))
+    return meta
+
+
+def _list_recordings():
+    out = []
+    for session_dir in sorted(glob.glob(os.path.join(RECORDINGS_DIR, "*")), reverse=True):
+        if not os.path.isdir(session_dir):
+            continue
+        mcaps = glob.glob(os.path.join(session_dir, "*.mcap"))
+        if not mcaps:
+            continue
+        mcap = mcaps[0]
+        name = os.path.basename(session_dir)
+        st = os.stat(mcap)
+        entry = {"name": name, "size_bytes": st.st_size, "mtime": int(st.st_mtime)}
+        entry.update(_read_bag_meta(session_dir))
+        out.append(entry)
+    return out
+
+
+@app.get("/recordings")
+async def recordings():
+    return JSONResponse(_list_recordings())
+
+
+@app.get("/recordings/{name}")
+async def download_recording(name: str):
+    # guard against path traversal; only serve a real session's .mcap
+    if "/" in name or ".." in name:
+        raise HTTPException(status_code=400, detail="bad name")
+    session_dir = os.path.join(RECORDINGS_DIR, name)
+    mcaps = glob.glob(os.path.join(session_dir, "*.mcap"))
+    if not mcaps:
+        raise HTTPException(status_code=404, detail="not found")
+    # permissive CORS so Foxglove Studio (app.foxglove.dev) can fetch it
+    return FileResponse(
+        mcaps[0], media_type="application/octet-stream",
+        filename=f"{name}.mcap",
+        headers={"Access-Control-Allow-Origin": "*"})
 
 frame_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 control_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

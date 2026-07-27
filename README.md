@@ -60,12 +60,24 @@ so you can watch the perception → supervisor → sim graph in real time.
 
 ### Recording sessions (MCAP / Foxglove)
 The web page has a **● Record** button that captures the whole pipeline to an
-[MCAP](https://mcap.dev) file, openable in [Foxglove Studio](https://foxglove.dev).
-Click to start, click again to stop; the `.mcap` lands in `./recordings/` on the
-host. Under the hood the button drives `ros2 bag record -s mcap -a` inside the
-triage container (the MCAP storage plugin is installed there).
+[MCAP](https://mcap.dev) file. Click to start, click again to stop; under the
+hood it drives `ros2 bag record -s mcap -a` inside the triage container (the
+MCAP storage plugin is installed there), and the `.mcap` lands in
+`./recordings/`.
 
-You can also record from the CLI:
+Finished captures appear in the **Recorded sessions** panel on the page with
+their duration, message count, topic count, and size. Each row has:
+- **Download** — the web server streams the `.mcap` straight to your browser
+  (works over the network, so a visitor on a deployed site can grab it — no
+  server shell access needed).
+- **Foxglove ↗** — opens the recording directly in
+  [Foxglove Studio](https://foxglove.dev) via its remote-file URL. This needs
+  the recording to be fetchable by your browser from Foxglove's origin, i.e.
+  the demo served over **public HTTPS** (the download endpoint already sends
+  `Access-Control-Allow-Origin: *`). On `localhost`, use **Download** and open
+  the file in Foxglove manually.
+
+CLI equivalent:
 
 ```bash
 ./scripts/record.sh my_session      # Ctrl-C to stop
