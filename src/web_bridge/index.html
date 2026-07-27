@@ -74,6 +74,12 @@
             try { view.resize(); } catch (e) { }
             window.dispatchEvent(new Event("resize"));
         };
+        // broadcast mode: this client is view-only and can never pause the
+        // simulation (a reloading/closing tab used to freeze it)
+        const connect = () => {
+            try { view.connect("ws://localhost:1234", "x3d", true); }
+            catch (e) { hint.textContent = "Could not load the Webots 3D viewer: " + e; }
+        };
         try {
             view.onready = () => {
                 hint.textContent = "";
@@ -83,10 +89,13 @@
                     if (++n > 10) clearInterval(t);
                 }, 400);
             };
-            view.ondisconnect = () => { hint.textContent = "Webots stream disconnected."; };
-            // broadcast mode: this client is view-only and can never pause
-            // the simulation (a reloading/closing tab used to freeze it)
-            view.connect("ws://localhost:1234", "x3d", true);
+            // Reconnect gently on drop (single delayed retry) rather than the
+            // storm of immediate full-page reloads the viewer does by default.
+            view.ondisconnect = () => {
+                hint.textContent = "Webots stream dropped — reconnecting…";
+                setTimeout(connect, 4000);
+            };
+            connect();
             setTimeout(nudgeResize, 1500);
         } catch (e) {
             hint.textContent = "Could not load the Webots 3D viewer: " + e;

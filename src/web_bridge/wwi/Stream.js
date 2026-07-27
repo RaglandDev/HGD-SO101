@@ -50,13 +50,10 @@ export default class Stream {
 
   #onSocketClose(event) {
     this.view.onerror('Disconnected from ' + this.wsServer + ' (' + event.code + ')');
-    // https://tools.ietf.org/html/rfc6455#section-7.4.1
-    if ((event.code > 1001 && event.code < 1016) || (event.code === 1001 && this.view.quitting === false)) {
-      if (window.confirm(`Streaming server error
-      Connection closed abnormally. (Error code:` + event.code + `)
-      The simulation is going to be reset`))
-        window.open(window.location.href, '_self');
-    }
+    // Upstream would confirm()+full-page-reload on any abnormal close, which
+    // storms the streaming server with reconnects and piles up connections
+    // against its client limit. Fail quietly instead; the page keeps the rest
+    // of the demo working and the user can reload the 3D view deliberately.
     this.view.destroyWorld();
     if (typeof this.view.onclose === 'function')
       this.view.onclose();
