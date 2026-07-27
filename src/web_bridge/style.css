@@ -125,6 +125,11 @@ main {
 .panel.wide {
     flex-basis: 100%;
     max-width: 1320px;
+    /* explicit height: the wwi toolbar.css (injected after this sheet)
+       sets webots-view to height:100%, which collapses in an auto-height
+       container */
+    height: 620px;
+    box-sizing: border-box;
 }
 
 #container {
@@ -166,15 +171,8 @@ webots-view {
     display: block;
     position: relative;
     width: 100%;
-    height: 560px;
+    height: 560px !important;
     background: #000;
     border-radius: 4px;
     overflow: hidden;
-}
-
-/* force the viewer's internal canvas to fill the panel; the component only
-   recomputes its own size on window resize events */
-webots-view canvas {
-    width: 100% !important;
-    height: 100% !important;
 }

@@ -27,6 +27,8 @@ RUN apt-get update && apt-get install -y \
     python3-opencv \
     && rm -rf /var/lib/apt/lists/*
 
+RUN pip3 install --no-cache-dir websockets
+
 WORKDIR /ros2_ws
 
 COPY entrypoint.sh /ros2_ws/entrypoint.sh

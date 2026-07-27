@@ -20,6 +20,9 @@ WORLD_PATH="/ros2_ws/src/simulation/webots/worlds/reachy_and_so101.wbt"
 
 echo "Starting Webots simulation on port 1234..."
 
+# keeps the sim running: counters any pause caused by web clients
+python3 /ros2_ws/src/simulation/watchdog.py &
+
 webots --batch --stdout --stderr --no-rendering --mode=realtime --port=1234 --stream "$WORLD_PATH"
 
 kill $XVFB_PID
