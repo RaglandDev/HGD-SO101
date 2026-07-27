@@ -1,8 +1,8 @@
 var video = document.getElementById('video');
 
 var sendCanvas = document.createElement('canvas');
-const width = 320;
-const height = 240;
+const width = 640;
+const height = 480;
 sendCanvas.width = width;
 sendCanvas.height = height;
 var sendCtx = sendCanvas.getContext('2d');
@@ -51,7 +51,7 @@ function sendFrame() {
                     sendFrame();
                 }, 150);
             }
-        }, 'image/jpeg', 0.4);
+        }, 'image/jpeg', 0.5);
     } else {
         setTimeout(sendFrame, 30);
     }

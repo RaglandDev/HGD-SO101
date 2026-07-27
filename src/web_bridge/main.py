@@ -48,8 +48,15 @@ async def websocket_endpoint(websocket: WebSocket):
             if data.get("type") == "websocket.disconnect":
                 break
             if data.get("bytes"):
-                # webcam frame -> ROS image bridge
-                frame_socket.sendto(data["bytes"], ("127.0.0.1", 9999))
+                # webcam frame -> ROS image bridge. A single UDP datagram
+                # maxes out at 65507 bytes; a larger frame would be dropped
+                # silently, so warn instead of letting it vanish.
+                frame = data["bytes"]
+                if len(frame) > 65000:
+                    print(f"WARN: dropping oversized frame {len(frame)} bytes "
+                          f"(exceeds UDP datagram limit)")
+                else:
+                    frame_socket.sendto(frame, ("127.0.0.1", 9999))
             elif data.get("text"):
                 # control message from the UI (e.g. scene reset)
                 try:

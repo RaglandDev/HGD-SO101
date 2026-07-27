@@ -265,10 +265,10 @@ private:
       gesture_pub_->publish(gesture_msg);
 
       RCLCPP_INFO_THROTTLE(
-          this->get_logger(), *this->get_clock(), 1000,
-          "Gesture: %s (raw=%d votes=%d face_y=%.0f L_wr=%.2f R_wr=%.2f)",
-          gesture_msg.data.c_str(), raw_raised, raised_count,
-          ref_y, get_kpv(9), get_kpv(10));
+          this->get_logger(), *this->get_clock(), 2000,
+          "Gesture: %s (votes=%d/5, wrist conf L=%.2f R=%.2f vs eye_y=%.0f)",
+          gesture_msg.data.c_str(), raised_count,
+          get_kpv(9), get_kpv(10), ref_y);
       // ==========================================
       std::vector<cv::Point2d> img_pts;
       std::vector<cv::Point3d> obj_pts;
