@@ -16,7 +16,7 @@ import websockets
 
 SERVER = "ws://127.0.0.1:1234"
 RUN_CMD = "real-time:-1"
-REASSERT_PERIOD_S = 1.0
+REASSERT_PERIOD_S = 3.0
 
 
 async def keep_running(ws):

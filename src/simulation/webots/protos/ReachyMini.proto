@@ -1591,85 +1591,117 @@ PROTO ReachyMini [
                       }
                     ]
                   }
-                  Pose {
-                    translation -0.038545 -0.057314 0.281039
-                    rotation -0.782382 0.483707 -0.392310 1.881202
-                    children [
-                      Shape {
-                        appearance PBRAppearance { baseColor 0 0 0 roughness 0.9 metalness 0 }
-                        geometry Mesh { url "ReachyMini_assets/antenna.stl" }
-                      }
+                  HingeJoint {
+                    jointParameters HingeJointParameters {
+                      axis 0.8613 0.4973 -0.1045
+                      anchor -0.036757 -0.052192 0.221590
+                    }
+                    device [
+                      RotationalMotor { name "right_antenna" maxVelocity 40 minPosition -1.0 maxPosition 1.0 maxTorque 5 }
+                      PositionSensor { name "right_antenna_sensor" }
                     ]
+                    endPoint Solid {
+                      translation -0.036757 -0.052192 0.221590
+                      children [
+                        Pose {
+                          translation -0.001788 -0.005122 0.059449
+                          rotation -0.782382 0.483707 -0.392310 1.881202
+                          children [
+                            Shape {
+                              appearance PBRAppearance { baseColor 0 0 0 roughness 0.9 metalness 0 }
+                              geometry Mesh { url "ReachyMini_assets/antenna.stl" }
+                            }
+                          ]
+                        }
+                        Pose {
+                          translation 0.005598 0.003232 -0.000679
+                          rotation 0.864055 -0.500680 -0.052238 3.081061
+                          children [
+                            Shape {
+                              appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                              geometry Mesh { url "ReachyMini_assets/dc15_a01_horn_dummy.stl" }
+                            }
+                          ]
+                        }
+                        Pose {
+                          translation 0.000000 0.000000 0.000000
+                          rotation 0.060309 0.034949 0.997568 2.093353
+                          children [
+                            Shape {
+                              appearance PBRAppearance { baseColor 0.713725 0.760784 0.8 roughness 0.9 metalness 0 }
+                              geometry Mesh { url "ReachyMini_assets/antenna_interface_3dprint.stl" }
+                            }
+                          ]
+                        }
+                        Pose {
+                          translation -0.002412 -0.001393 0.000293
+                          rotation 0.060309 0.034949 0.997568 2.093353
+                          children [
+                            Shape {
+                              appearance PBRAppearance { baseColor 1 1 1 roughness 0.9 metalness 0 }
+                              geometry Mesh { url "ReachyMini_assets/antenna_body_3dprint.stl" }
+                            }
+                          ]
+                        }
+                      ]
+                      name "right_antenna_link"
+                    }
                   }
-                  Pose {
-                    translation -0.031159 -0.048960 0.220911
-                    rotation 0.864055 -0.500680 -0.052238 3.081061
-                    children [
-                      Shape {
-                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
-                        geometry Mesh { url "ReachyMini_assets/dc15_a01_horn_dummy.stl" }
-                      }
+                  HingeJoint {
+                    jointParameters HingeJointParameters {
+                      axis 0.8613 -0.4973 -0.1045
+                      anchor -0.036758 0.052193 0.221590
+                    }
+                    device [
+                      RotationalMotor { name "left_antenna" maxVelocity 40 minPosition -1.0 maxPosition 1.0 maxTorque 5 }
+                      PositionSensor { name "left_antenna_sensor" }
                     ]
-                  }
-                  Pose {
-                    translation -0.036757 -0.052192 0.221590
-                    rotation 0.060309 0.034949 0.997568 2.093353
-                    children [
-                      Shape {
-                        appearance PBRAppearance { baseColor 0.713725 0.760784 0.8 roughness 0.9 metalness 0 }
-                        geometry Mesh { url "ReachyMini_assets/antenna_interface_3dprint.stl" }
-                      }
-                    ]
-                  }
-                  Pose {
-                    translation -0.039169 -0.053585 0.221883
-                    rotation 0.060309 0.034949 0.997568 2.093353
-                    children [
-                      Shape {
-                        appearance PBRAppearance { baseColor 1 1 1 roughness 0.9 metalness 0 }
-                        geometry Mesh { url "ReachyMini_assets/antenna_body_3dprint.stl" }
-                      }
-                    ]
-                  }
-                  Pose {
-                    translation -0.031160 0.048960 0.220910
-                    rotation 0.501140 -0.864835 -0.030297 3.037113
-                    children [
-                      Shape {
-                        appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
-                        geometry Mesh { url "ReachyMini_assets/dc15_a01_horn_dummy.stl" }
-                      }
-                    ]
-                  }
-                  Pose {
-                    translation -0.039170 0.053585 0.221882
-                    rotation 0.060017 0.103581 0.992809 1.056637
-                    children [
-                      Shape {
-                        appearance PBRAppearance { baseColor 1 1 1 roughness 0.9 metalness 0 }
-                        geometry Mesh { url "ReachyMini_assets/antenna_body_3dprint.stl" }
-                      }
-                    ]
-                  }
-                  Pose {
-                    translation -0.036758 0.052193 0.221590
-                    rotation 0.060017 0.103581 0.992809 1.056637
-                    children [
-                      Shape {
-                        appearance PBRAppearance { baseColor 0.713725 0.760784 0.8 roughness 0.9 metalness 0 }
-                        geometry Mesh { url "ReachyMini_assets/antenna_interface_3dprint.stl" }
-                      }
-                    ]
-                  }
-                  Pose {
-                    translation -0.038545 0.057315 0.281038
-                    rotation -0.412043 0.666452 -0.621340 2.496559
-                    children [
-                      Shape {
-                        appearance PBRAppearance { baseColor 0 0 0 roughness 0.9 metalness 0 }
-                        geometry Mesh { url "ReachyMini_assets/antenna.stl" }
-                      }
-                    ]
+                    endPoint Solid {
+                      translation -0.036758 0.052193 0.221590
+                      children [
+                        Pose {
+                          translation 0.005598 -0.003233 -0.000680
+                          rotation 0.501140 -0.864835 -0.030297 3.037113
+                          children [
+                            Shape {
+                              appearance PBRAppearance { baseColor 0.262745 0.282353 0.301961 roughness 0.9 metalness 0 }
+                              geometry Mesh { url "ReachyMini_assets/dc15_a01_horn_dummy.stl" }
+                            }
+                          ]
+                        }
+                        Pose {
+                          translation -0.002412 0.001392 0.000292
+                          rotation 0.060017 0.103581 0.992809 1.056637
+                          children [
+                            Shape {
+                              appearance PBRAppearance { baseColor 1 1 1 roughness 0.9 metalness 0 }
+                              geometry Mesh { url "ReachyMini_assets/antenna_body_3dprint.stl" }
+                            }
+                          ]
+                        }
+                        Pose {
+                          translation 0.000000 0.000000 0.000000
+                          rotation 0.060017 0.103581 0.992809 1.056637
+                          children [
+                            Shape {
+                              appearance PBRAppearance { baseColor 0.713725 0.760784 0.8 roughness 0.9 metalness 0 }
+                              geometry Mesh { url "ReachyMini_assets/antenna_interface_3dprint.stl" }
+                            }
+                          ]
+                        }
+                        Pose {
+                          translation -0.001787 0.005122 0.059448
+                          rotation -0.412043 0.666452 -0.621340 2.496559
+                          children [
+                            Shape {
+                              appearance PBRAppearance { baseColor 0 0 0 roughness 0.9 metalness 0 }
+                              geometry Mesh { url "ReachyMini_assets/antenna.stl" }
+                            }
+                          ]
+                        }
+                      ]
+                      name "left_antenna_link"
+                    }
                   }
                   Camera {
                     translation 0.039499 0.000000 0.202071

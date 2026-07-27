@@ -22,6 +22,7 @@ from flask import Flask, Response
 from geometry_msgs.msg import Vector3
 from rclpy.node import Node
 from sensor_msgs.msg import CompressedImage, JointState
+from std_msgs.msg import String
 
 from controller import Robot
 
@@ -31,6 +32,9 @@ NECK_SMOOTHING = 0.2               # low-pass factor per step
 IDLE_TIMEOUT_S = 5.0               # start idle scan if no command for this long
 PITCH_LIMITS = (-0.6, 0.6)
 YAW_LIMITS = (-2.6, 2.6)
+WIGGLE_DURATION_S = 2.5            # antenna wiggle length on pickup
+WIGGLE_FREQ_HZ = 4.0              # antenna sway rate
+WIGGLE_AMPLITUDE = 0.8            # antenna sway amplitude (rad)
 
 app = Flask(__name__)
 _latest_jpeg = None
@@ -71,13 +75,19 @@ class ReachyController(Node):
         self.camera = robot.getDevice("head_camera")
         self.camera.enable(TIME_STEP_MS * CAMERA_PUBLISH_EVERY_N_STEPS)
 
+        self.left_antenna = robot.getDevice("left_antenna")
+        self.right_antenna = robot.getDevice("right_antenna")
+
         self.target_yaw = 0.0
         self.target_pitch = 0.3   # look down at the table by default
         self.cmd_yaw = 0.0
         self.cmd_pitch = 0.3
         self.last_cmd_time = 0.0
+        self.wiggle_until = 0.0   # antennae wiggle while getTime() < this
 
         self.create_subscription(Vector3, "/reachy/neck_cmd", self.on_neck_cmd, 10)
+        # a pick command is exactly the moment a pickup gesture is confirmed
+        self.create_subscription(String, "/so101/pick_cmd", self.on_pick, 10)
         self.camera_pub = self.create_publisher(CompressedImage, "/reachy/camera/compressed", 10)
         self.joint_pub = self.create_publisher(JointState, "/joint_states", 10)
 
@@ -87,6 +97,11 @@ class ReachyController(Node):
         self.cmd_yaw = max(YAW_LIMITS[0], min(YAW_LIMITS[1], msg.x))
         self.cmd_pitch = max(PITCH_LIMITS[0], min(PITCH_LIMITS[1], msg.y))
         self.last_cmd_time = self.robot.getTime()
+
+    def on_pick(self, _msg):
+        # excited antenna wiggle acknowledging the pickup gesture
+        self.wiggle_until = self.robot.getTime() + WIGGLE_DURATION_S
+        self.get_logger().info("pickup acknowledged - antennae wiggling")
 
     def step_control(self, step_count):
         now = self.robot.getTime()
@@ -104,6 +119,16 @@ class ReachyController(Node):
         cur_pitch = self.pitch_sensor.getValue()
         self.yaw_motor.setPosition(cur_yaw + NECK_SMOOTHING * (self.target_yaw - cur_yaw))
         self.pitch_motor.setPosition(cur_pitch + NECK_SMOOTHING * (self.target_pitch - cur_pitch))
+
+        # antennae: fast opposite-phase sway while acknowledging a pickup,
+        # otherwise resting straight
+        if now < self.wiggle_until:
+            sway = WIGGLE_AMPLITUDE * math.sin(2 * math.pi * WIGGLE_FREQ_HZ * now)
+            self.left_antenna.setPosition(sway)
+            self.right_antenna.setPosition(-sway)
+        else:
+            self.left_antenna.setPosition(0.0)
+            self.right_antenna.setPosition(0.0)
 
         if step_count % CAMERA_PUBLISH_EVERY_N_STEPS == 0:
             self.publish_camera()
