@@ -15,7 +15,7 @@ XVFB_PID=$!
 # Wait for Xvfb to initialize
 sleep 2
 
-WORLD_PATH="/ros2_ws/src/simulation/ggd_world.wbt"
+WORLD_PATH="/ros2_ws/src/simulation/webots/worlds/reachy_and_so101.wbt"
 
 echo "Starting Webots simulation on port 1234..."
 

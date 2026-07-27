@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Webots editor/cache files
+*.wbproj
+.*.wbproj
+*.wbt.bak
+
+# Python
+__pycache__/
+*.pyc
+
+# ROS2 / colcon build artifacts
+build/
+install/
+log/
