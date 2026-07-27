@@ -1,30 +1,91 @@
 # Gesture-and-Gaze-Directed SO-101 via Reachy Mini
 
+Look at a cube, raise your hand, and a simulated [SO-101](https://github.com/TheRobotStudio/SO-ARM100)
+arm picks it up — with a [Reachy Mini](https://github.com/pollen-robotics/reachy_mini)
+head tracking whatever you're looking at.
+
+Webcam frames are streamed from the browser to a C++ ROS 2 perception node
+(YOLOv8-pose via ONNX Runtime) that estimates head pose (solvePnP) and a
+raised-hand gesture. A supervisor node quantizes your gaze into object zones,
+and a Webots simulation executes the pick with an analytically solved
+top-down grasp. Everything runs in Docker.
+
 ## Requirements
-- Docker Engine (Linux only) or Docker Desktop
-- A web browser that has webcam and WebSockets support
+- Docker Engine (Linux) or Docker Desktop
+- A web browser with webcam and WebSockets support
 - A webcam
 
 ## Usage
-1. `docker compose up --build`
-2. Navigate to http://localhost:8080/ in your web browser, accept webcam permissions
-3. Look in the direction of the simulated object you want the SO-101 to pick up
-4. Make a fist gesture in front of your webcam in order to grab the simulated object
+1. `docker compose up --build` (first build downloads Webots and exports the
+   YOLOv8n-pose ONNX model — it takes a while)
+2. Open http://localhost:8080/ and accept webcam permissions
+3. Wait for the Webots container to finish loading (the "Reachy Mini POV"
+   panel starts showing the simulated table)
+4. **Look toward a cube** (left / center / right) — the matching chip in the
+   status bar lights up after ~0.7 s of dwell, and the Reachy Mini head turns
+   toward that cube
+5. **Raise your hand** (wrist above shoulder) — the SO-101 picks the selected
+   cube and drops it on the tray
 
-## Misc.
-### Monitor `/human/camera/compressed` fps
-1. `docker compose up --build`
-2. Navigate to http://localhost:8080/ in your web browser, accept webcam permissions
-3. `docker exec -it ggd-so101-perception_processor-1 bash`
-4. `source /opt/ros/humble/setup.bash`
-5. `ros2 topic hz /human/camera/compressed`[^1]
+If left/right selection feels mirrored, set `GAZE_YAW_SIGN=-1` for
+`triage_supervisor` in `docker-compose.yml`.
 
-### Ros topics
-- `/human/camera/compressed`
-- `/human/gaze_vector`
+## Architecture
 
-### Note on Performance
-This architecture is fully containerized for deployment on robotic hardware. When developing on macOS, Docker runs within a Linux Virtual Machine, restricting ONNX to CPU-only execution. For real-time <10ms latency, the container must be deployed to a native Linux host with GPU passthrough (e.g., an Ubuntu workstation or NVIDIA Jetson)."
+| Container | Language | Role |
+|---|---|---|
+| `web_input_bridge` | Python (FastAPI) + C++ (ROS 2) | Serves the web app; browser frames → UDP → `/human/camera/compressed`; relays gaze + triage status back to the browser over WebSocket |
+| `perception_processor` | C++ (ROS 2, ONNX Runtime, OpenCV) | YOLOv8n-pose inference, head-pose estimation (solvePnP + smoothing) → `/human/gaze`, raised-hand detection → `/human/gesture` |
+| `triage_supervisor` | Python (ROS 2) | Gaze-zone quantization with hysteresis + dwell selection, gesture debounce, pick triggering, `/sys/triage_status` |
+| `simulation_control` | Python (Webots R2023b + ROS 2) | World with table, cubes, Reachy Mini (real meshes, simplified 2-DOF neck) and SO-101 (real URDF conversion); head-tracking controller; arm controller with analytic IK and scripted pick |
 
-[^1]: Modern browsers will de-allocate resources from non-active tabs, so you may see a large drop in frame rate if you do not have the webcam tab open.
+### ROS 2 topics
+- `/human/camera/compressed` — webcam frames (browser → sim side)
+- `/human/gaze` (`PoseStamped`) — estimated head pose
+- `/human/gesture` (`String`) — `HAND_RAISED` / `DEFAULT`
+- `/reachy/neck_cmd` (`Vector3`) — commanded neck yaw/pitch
+- `/reachy/camera/compressed` — Reachy Mini head-camera frames
+- `/so101/pick_cmd` (`String`) — `red` / `green` / `blue`
+- `/so101/stop` (`String`) — abort and home the arm
+- `/so101/state` (`String`) — arm state machine (`IDLE`, `PICK:red:GRASP`, …)
+- `/sys/triage_status` (`String`, JSON) — live status for the web UI
+- `/joint_states` — both robots' joints
 
+### Exposed ports
+- `8080` — web app (HTTP + WebSocket)
+- `1234` — Webots streaming server (3D view embedded in the web app)
+- `5001` — Reachy Mini POV (MJPEG)
+
+## Simulation details
+- **SO-101**: converted from TheRobotStudio's `so101_new_calib.urdf` with
+  `urdf2webots`; STL meshes vendored in-repo. The pick uses a closed-form
+  planar IK (link lengths measured from the URDF) for a top-down grasp,
+  verified to ~1 cm end-effector error in sim.
+- **Grasping** is supervisor-assisted: once the gripper closes within 6 cm of
+  the target cube, the cube is kinematically attached to the gripper frame
+  until release. This keeps the demo deterministic under software rendering,
+  where mesh-vs-mesh contact physics is unreliable.
+- **Reachy Mini**: real shell meshes from pollen-robotics; the 6-DOF Stewart
+  platform neck is approximated by a kinematic yaw + pitch neck, which is all
+  the gaze-following behavior needs.
+
+## Manual testing without a webcam
+```bash
+docker exec -it ggd-so101-triage_supervisor-1 bash
+source /opt/ros/humble/setup.bash
+ros2 topic pub --once /so101/pick_cmd std_msgs/String "data: green"
+ros2 topic echo /so101/state
+```
+
+## Note on performance
+This architecture is fully containerized for deployment on robotic hardware.
+On macOS, Docker runs inside a Linux VM and the Webots container is emulated
+x86-64 (no arm64 Webots build), so the simulation runs well below real time
+and ONNX inference is CPU-only. For a smooth live demo, deploy to a native
+x86-64 Linux host (e.g. an Ubuntu workstation or cloud VM with the three
+ports exposed) — the same `docker compose up` works unchanged.
+
+## Credits
+- [TheRobotStudio SO-ARM100 / SO-101](https://github.com/TheRobotStudio/SO-ARM100) (Apache-2.0) — arm URDF + meshes
+- [pollen-robotics reachy_mini](https://github.com/pollen-robotics/reachy_mini) (Apache-2.0) — head/body meshes
+- [Ultralytics YOLOv8n-pose](https://github.com/ultralytics/ultralytics) — human keypoint model
