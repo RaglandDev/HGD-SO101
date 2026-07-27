@@ -43,7 +43,7 @@ services:
     networks:
       - shared_autonomy_net
     environment:
-      # flip to -1 if left/right selection feels mirrored on your webcam
-      - GAZE_YAW_SIGN=1
+      # flip if left/right selection feels mirrored on your webcam
+      - GAZE_YAW_SIGN=-1
     depends_on:
       - simulation_control

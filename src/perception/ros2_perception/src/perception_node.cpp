@@ -1,6 +1,8 @@
+#include <algorithm>
 #include <arpa/inet.h>
 #include <cmath>
 #include <cv_bridge/cv_bridge.h>
+#include <deque>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -223,19 +225,32 @@ private:
     int best = find_best_anchor(d);
     if (best >= 0) {
       // ==========================================
-      // NEW GESTURE LOGIC: "Hand Raised"
+      // GESTURE LOGIC: "Hand Raised"
       // ==========================================
       constexpr int NA = 8400;
       auto get_kpy = [&](int kp) { return d[(5 + kp * 3 + 1) * NA + best]; };
       auto get_kpv = [&](int kp) { return d[(5 + kp * 3 + 2) * NA + best]; };
 
-      float left_shoulder_y = get_kpy(5);
-      float right_shoulder_y = get_kpy(6);
+      // COCO keypoints: 5/6 = shoulders, 7/8 = elbows, 9/10 = wrists.
+      // A side counts as raised when its wrist OR elbow is above the
+      // shoulder; low-res webcam frames often lose the wrist, so the elbow
+      // fallback and low confidence thresholds keep detection usable.
+      auto raised_side = [&](int shoulder, int elbow, int wrist) {
+        if (get_kpv(shoulder) < 0.25f) return false;
+        float shoulder_y = get_kpy(shoulder);
+        bool wrist_up = get_kpv(wrist) > 0.20f && get_kpy(wrist) < shoulder_y;
+        bool elbow_up = get_kpv(elbow) > 0.25f && get_kpy(elbow) < shoulder_y;
+        return wrist_up || elbow_up;
+      };
+      bool raw_raised = raised_side(5, 7, 9) || raised_side(6, 8, 10);
 
-      bool left_raised =  (get_kpv(9) > 0.35f  && get_kpy(9) < left_shoulder_y);
-      bool right_raised = (get_kpv(10) > 0.35f && get_kpy(10) < right_shoulder_y);
-
-      bool hand_raised = left_raised || right_raised;
+      // Temporal smoothing: majority vote over the last 5 frames removes
+      // single-frame flicker that would otherwise reset the gesture
+      // debounce in the triage supervisor.
+      raised_history_.push_back(raw_raised);
+      if (raised_history_.size() > 5) raised_history_.pop_front();
+      int raised_count = std::count(raised_history_.begin(), raised_history_.end(), true);
+      bool hand_raised = raised_count >= 3;
 
       std_msgs::msg::String gesture_msg;
       gesture_msg.data = hand_raised ? "HAND_RAISED" : "DEFAULT";
@@ -243,8 +258,9 @@ private:
 
       RCLCPP_INFO_THROTTLE(
           this->get_logger(), *this->get_clock(), 1000,
-          "Gesture: %s (L_vis: %.2f, R_vis: %.2f)", 
-          gesture_msg.data.c_str(), get_kpv(9), get_kpv(10));
+          "Gesture: %s (raw=%d votes=%d L_wr=%.2f R_wr=%.2f L_el=%.2f R_el=%.2f)",
+          gesture_msg.data.c_str(), raw_raised, raised_count,
+          get_kpv(9), get_kpv(10), get_kpv(7), get_kpv(8));
       // ==========================================
       std::vector<cv::Point2d> img_pts;
       std::vector<cv::Point3d> obj_pts;
@@ -276,6 +292,7 @@ private:
 
   std::vector<cv::Point2d> smoothed_kps_ = std::vector<cv::Point2d>(5, cv::Point2d(0, 0));
   std::vector<bool> kp_init_ = std::vector<bool>(5, false);
+  std::deque<bool> raised_history_;
 };
 
 int main(int argc, char *argv[]) {

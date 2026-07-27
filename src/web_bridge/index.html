@@ -50,10 +50,19 @@
         import "https://cyberbotics.com/wwi/R2023b/WebotsView.js";
         const view = document.getElementById("wview");
         const hint = document.getElementById("wview-hint");
+        // webots-view only sizes its canvas on window resize events, so it
+        // starts tiny until one fires (e.g. entering fullscreen). Nudge it.
+        const nudgeResize = () => window.dispatchEvent(new Event("resize"));
         try {
-            view.onready = () => { hint.textContent = ""; };
+            view.onready = () => {
+                hint.textContent = "";
+                nudgeResize();
+                setTimeout(nudgeResize, 500);
+                setTimeout(nudgeResize, 2000);
+            };
             view.ondisconnect = () => { hint.textContent = "Webots stream disconnected."; };
             view.connect("ws://localhost:1234");
+            setTimeout(nudgeResize, 1000);
         } catch (e) {
             hint.textContent = "Could not load the Webots 3D viewer: " + e;
         }
