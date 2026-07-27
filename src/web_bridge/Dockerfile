@@ -12,6 +12,7 @@ WORKDIR /workspace
 RUN mkdir -p src/ros2_bridge/src
 
 COPY main.py index.html script.js style.css /workspace/
+COPY wwi/ /workspace/wwi/
 COPY ros2_bridge/ /workspace/src/ros2_bridge/
 
 RUN . /opt/ros/humble/setup.sh && \
