@@ -11,7 +11,7 @@ WorldInfo {
   FPS 20
 }
 Viewpoint {
-  orientation 0.9311 0.2081 0.2996 1.2819
+  orientation -0.1763 0.1119 0.9780 2.0307
   position 0.75 -1.7 1.5
   fieldOfView 0.85
 }
