@@ -7,7 +7,7 @@ ROS 2 node:
     and smoothly tracks the commanded neck orientation
   - publishes /reachy/camera/compressed (sensor_msgs/CompressedImage) from the
     head camera
-  - publishes /joint_states for the neck joints
+  - publishes /reachy/joint_states for the neck joints
   - serves the head-camera view as an MJPEG stream on :5000 ("Reachy POV")
 """
 
@@ -89,7 +89,7 @@ class ReachyController(Node):
         # a pick command is exactly the moment a pickup gesture is confirmed
         self.create_subscription(String, "/so101/pick_cmd", self.on_pick, 10)
         self.camera_pub = self.create_publisher(CompressedImage, "/reachy/camera/compressed", 10)
-        self.joint_pub = self.create_publisher(JointState, "/joint_states", 10)
+        self.joint_pub = self.create_publisher(JointState, "/reachy/joint_states", 10)
 
         self.get_logger().info("Reachy controller ready")
 

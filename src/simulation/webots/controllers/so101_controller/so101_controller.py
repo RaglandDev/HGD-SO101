@@ -45,10 +45,13 @@ BASE_Z = 0.74
 BASE_YAW = math.pi
 
 CUBE_DEFS = {"red": "CUBE_RED", "green": "CUBE_GREEN", "blue": "CUBE_BLUE"}
-TRAY_WORLD = (0.30, 0.22, 0.79)      # release point above the drop tray
+CUBE_SIZE = 0.025
+TRAY_XY = (0.30, 0.22)               # drop tray center (matches the world file)
+TRAY_SURFACE_Z = 0.745               # tray top surface height
 ATTACH_DIST = 0.06                   # max grip-site->cube distance to attach
 HOVER_CLEARANCE = 0.07               # hover this high above the grasp point
 GRASP_Z_OFFSET = 0.012               # aim grip frame slightly above cube center
+CARRY_OFFSET = 0.02                  # held cube hangs this far below the grip site
 
 JOINTS = ["shoulder_pan", "shoulder_lift", "elbow_flex",
           "wrist_flex", "wrist_roll", "gripper"]
@@ -117,6 +120,7 @@ class So101Controller(Node):
         self.plan = []
         self.picking = None
         self.held_cube = None
+        self.placed_count = 0   # how many cubes are on the stack
 
         self.home = [0.0, -1.0, 1.2, 0.6, 0.0]
         self.set_arm(self.home)
@@ -126,7 +130,7 @@ class So101Controller(Node):
         self.create_subscription(String, "/so101/stop", self.on_stop, 10)
         self.create_subscription(String, "/sim/reset", self.on_reset, 10)
         self.state_pub = self.create_publisher(String, "/so101/state", 10)
-        self.joint_pub = self.create_publisher(JointState, "/joint_states", 10)
+        self.joint_pub = self.create_publisher(JointState, "/so101/joint_states", 10)
 
         self.get_logger().info("SO-101 controller ready")
 
@@ -144,10 +148,16 @@ class So101Controller(Node):
         cube_w = cube.getPosition()
         grasp = world_to_base((cube_w[0], cube_w[1], cube_w[2] + GRASP_Z_OFFSET))
         hover = (grasp[0], grasp[1], grasp[2] + HOVER_CLEARANCE)
-        tray = world_to_base(TRAY_WORLD)
+        # place at the next open slot on the stack; the held cube hangs
+        # CARRY_OFFSET below the grip site, so aim the grip that much higher.
+        # (No separate approach-from-above: the arm is kinematic and the cube
+        # is snapped to its slot on release, and the extra height would push
+        # the top of a 3-cube stack past the arm's reach.)
+        place_z = self.stack_slot_z(self.placed_count)
+        place = world_to_base((TRAY_XY[0], TRAY_XY[1], place_z + CARRY_OFFSET))
 
-        g_ik, h_ik, t_ik = ik(grasp), ik(hover), ik(tray)
-        if g_ik is None or h_ik is None or t_ik is None:
+        g_ik, h_ik, p_ik = ik(grasp), ik(hover), ik(place)
+        if None in (g_ik, h_ik, p_ik):
             self.get_logger().error(f"'{color}' unreachable at {cube_w}")
             return
 
@@ -157,17 +167,22 @@ class So101Controller(Node):
             ("DESCEND",  g_ik, GRIPPER_OPEN,   1.0, None),
             ("GRASP",    g_ik, GRIPPER_CLOSED, 0.7, "attach"),
             ("LIFT",     h_ik, GRIPPER_CLOSED, 0.8, None),
-            ("TO_TRAY",  t_ik, GRIPPER_CLOSED, 1.6, None),
-            ("RELEASE",  t_ik, GRIPPER_OPEN,   0.6, "detach"),
+            ("TO_TRAY",  p_ik, GRIPPER_CLOSED, 1.6, None),
+            ("RELEASE",  p_ik, GRIPPER_OPEN,   0.6, "place"),
             ("HOME",     self.home[:4], GRIPPER_OPEN, 1.4, None),
         ]
         self.next_phase()
+
+    def stack_slot_z(self, n):
+        """World z of the center of the n-th cube on the drop stack."""
+        return TRAY_SURFACE_Z + CUBE_SIZE / 2 + n * CUBE_SIZE
 
     def on_reset(self, _msg):
         self.get_logger().info("scene reset requested")
         self.detach()
         self.plan = []
         self.picking = None
+        self.placed_count = 0
         for color, node in self.cubes.items():
             if node is None or color not in self.cube_home:
                 continue
@@ -205,11 +220,10 @@ class So101Controller(Node):
         self.set_arm(arm)
         self.set_gripper(grip)
         self.phase_end = self.robot.getTime() + duration
-        if action == "attach":
-            self.pending_attach = True
-        else:
-            self.pending_attach = False
-        if action == "detach":
+        self.pending_attach = (action == "attach")
+        if action == "place":
+            self.place_held_cube()
+        elif action == "detach":
             self.detach()
 
     def set_arm(self, q):
@@ -236,6 +250,18 @@ class So101Controller(Node):
             self.held_cube.resetPhysics()
             self.held_cube = None
 
+    def place_held_cube(self):
+        """Snap the carried cube onto the exact next stack slot (centered,
+        at rest) rather than dropping it, so the stack never gets knocked."""
+        if self.held_cube is None:
+            return
+        z = self.stack_slot_z(self.placed_count)
+        self.held_cube.getField("translation").setSFVec3f([TRAY_XY[0], TRAY_XY[1], z])
+        self.held_cube.getField("rotation").setSFRotation([0.0, 0.0, 1.0, 0.0])
+        self.held_cube.resetPhysics()
+        self.held_cube = None
+        self.placed_count += 1
+
     def step_control(self, step_count):
         now = self.robot.getTime()
 
@@ -243,7 +269,7 @@ class So101Controller(Node):
         if self.held_cube is not None:
             gp = self.grip_site.getPosition()
             self.held_cube.getField("translation").setSFVec3f(
-                [gp[0], gp[1], gp[2] - 0.02])
+                [gp[0], gp[1], gp[2] - CARRY_OFFSET])
             self.held_cube.resetPhysics()
 
         if self.state == "STOPPING" and now >= self.phase_end:
