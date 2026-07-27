@@ -65,6 +65,9 @@ async def websocket_endpoint(websocket: WebSocket):
                     continue
                 if cmd.get("t") == "reset":
                     control_socket.sendto(b"RESET", ("127.0.0.1", 9996))
+                elif cmd.get("t") == "record":
+                    action = b"REC_START" if cmd.get("action") == "start" else b"REC_STOP"
+                    control_socket.sendto(action, ("127.0.0.1", 9996))
     except WebSocketDisconnect:
         print("WebSocket disconnected.")
     finally:

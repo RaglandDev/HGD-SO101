@@ -34,6 +34,20 @@ resetBtn.onclick = function () {
     }
 };
 
+var recordBtn = document.getElementById('recordBtn');
+var isRecording = false;
+recordBtn.onclick = function () {
+    if (ws.readyState !== 1) return;
+    // optimistic; the status feed confirms the real state
+    ws.send(JSON.stringify({ t: 'record', action: isRecording ? 'stop' : 'start' }));
+};
+
+function renderRecording(rec) {
+    isRecording = !!rec;
+    recordBtn.classList.toggle('recording', isRecording);
+    recordBtn.textContent = isRecording ? '■ Stop' : '● Record';
+}
+
 navigator.mediaDevices.getUserMedia({ video: true })
     .then(function (s) { video.srcObject = s; })
     .catch(function (e) { connStat.textContent = 'webcam error: ' + e.name; });
@@ -91,6 +105,7 @@ function updateStatus(d) {
         banner.classList.toggle('picking', !!d.arm && d.arm.indexOf('PICK') === 0);
     }
     if (d.topics) renderTopics(d.topics);
+    renderRecording(d.recording);
     for (var c in chips) {
         chips[c].classList.toggle('gazed', d.zone === c);
         chips[c].classList.toggle('selected', d.selected === c);

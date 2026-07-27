@@ -14,3 +14,7 @@ __pycache__/
 build/
 install/
 log/
+
+# MCAP session recordings (keep the dir, not the captures)
+recordings/*
+!recordings/.gitkeep

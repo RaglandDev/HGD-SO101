@@ -87,7 +87,8 @@ header h1 {
     font-weight: bold;
 }
 
-#resetBtn {
+#resetBtn,
+#recordBtn {
     background: #2b2f36;
     color: #e8e8e8;
     border: 1px solid #444;
@@ -96,8 +97,24 @@ header h1 {
     cursor: pointer;
 }
 
-#resetBtn:hover {
+#resetBtn:hover,
+#recordBtn:hover {
     background: #3a3f48;
+}
+
+#recordBtn {
+    color: #e0605f;
+}
+
+#recordBtn.recording {
+    background: #e0605f;
+    color: #fff;
+    border-color: #e0605f;
+    animation: recpulse 1.2s ease-in-out infinite;
+}
+
+@keyframes recpulse {
+    50% { opacity: 0.55; }
 }
 
 main {

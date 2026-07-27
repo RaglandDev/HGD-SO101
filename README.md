@@ -50,8 +50,26 @@ for `triage_supervisor` in `docker-compose.yml`.
 - `/so101/pick_cmd` (`String`) — `red` / `green` / `blue`
 - `/so101/stop` (`String`) — abort and home the arm
 - `/so101/state` (`String`) — arm state machine (`IDLE`, `PICK:red:GRASP`, …)
-- `/sys/triage_status` (`String`, JSON) — live status for the web UI
+- `/sys/triage_status` (`String`, JSON) — live status for the web UI, including
+  a per-topic telemetry snapshot (rate + latest value)
 - `/joint_states` — both robots' joints
+
+The web page shows a **Live ROS 2 topics** panel that renders this telemetry —
+every topic with its current rate, latest value, and a one-line explanation —
+so you can watch the perception → supervisor → sim graph in real time.
+
+### Recording sessions (MCAP / Foxglove)
+The web page has a **● Record** button that captures the whole pipeline to an
+[MCAP](https://mcap.dev) file, openable in [Foxglove Studio](https://foxglove.dev).
+Click to start, click again to stop; the `.mcap` lands in `./recordings/` on the
+host. Under the hood the button drives `ros2 bag record -s mcap -a` inside the
+triage container (the MCAP storage plugin is installed there).
+
+You can also record from the CLI:
+
+```bash
+./scripts/record.sh my_session      # Ctrl-C to stop
+```
 
 ### Exposed ports
 - `8080` — web app (HTTP + WebSocket)

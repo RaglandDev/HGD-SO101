@@ -22,8 +22,11 @@ seconds triggers the pick, with a cooldown while the arm is busy.
 import json
 import math
 import os
+import signal
+import subprocess
 import time
 from collections import deque
+from datetime import datetime
 
 import rclpy
 from geometry_msgs.msg import PoseStamped, Vector3
@@ -100,6 +103,7 @@ ZONE_EXIT_DEG = float(os.environ.get("ZONE_EXIT_DEG", "8"))
 DWELL_S = float(os.environ.get("DWELL_S", "0.4"))
 GESTURE_HOLD_S = float(os.environ.get("GESTURE_HOLD_S", "0.2"))
 COOLDOWN_S = float(os.environ.get("COOLDOWN_S", "2.5"))
+RECORDINGS_DIR = os.environ.get("RECORDINGS_DIR", "/recordings")
 GAZE_TIMEOUT_S = 1.5
 
 
@@ -137,7 +141,45 @@ class TriageSupervisor(Node):
 
         self.topic_monitor = TopicMonitor(self)
 
+        # MCAP recording, toggled from the web page's Record button
+        self.rec_proc = None
+        self.rec_name = None
+        self.create_subscription(String, "/sys/control", self.on_control, 10)
+
         self.create_timer(0.1, self.tick)
+
+    # --- MCAP recording -----------------------------------------------------
+    def on_control(self, msg):
+        if msg.data == "REC_START":
+            self.start_recording()
+        elif msg.data == "REC_STOP":
+            self.stop_recording()
+
+    def start_recording(self):
+        if self.rec_proc is not None:
+            return
+        self.rec_name = "session_" + datetime.now().strftime("%Y%m%d_%H%M%S")
+        out = os.path.join(RECORDINGS_DIR, self.rec_name)
+        try:
+            self.rec_proc = subprocess.Popen(
+                ["ros2", "bag", "record", "-s", "mcap", "-a", "--output", out])
+            self.get_logger().info(f"recording started -> {out}.mcap")
+        except Exception as e:
+            self.rec_proc = None
+            self.get_logger().error(f"failed to start recording: {e}")
+
+    def stop_recording(self):
+        if self.rec_proc is None:
+            return
+        # ros2 bag needs SIGINT (not SIGTERM) to finalize the MCAP cleanly
+        self.rec_proc.send_signal(signal.SIGINT)
+        try:
+            self.rec_proc.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            self.rec_proc.kill()
+        self.get_logger().info(f"recording stopped -> {self.rec_name}.mcap")
+        self.rec_proc = None
+        self.rec_name = None
         self.get_logger().info("Triage supervisor ready")
 
     # --- inputs -------------------------------------------------------------
@@ -191,6 +233,11 @@ class TriageSupervisor(Node):
     def tick(self):
         now = time.monotonic()
         gaze_fresh = (now - self.last_gaze_time) < GAZE_TIMEOUT_S
+
+        # forget a recorder that exited on its own (e.g. disk error)
+        if self.rec_proc is not None and self.rec_proc.poll() is not None:
+            self.rec_proc = None
+            self.rec_name = None
 
         if gaze_fresh and self.zone is not None:
             if now - self.zone_since >= DWELL_S:
@@ -248,6 +295,8 @@ class TriageSupervisor(Node):
             "triggered": triggered,
             "msg": msg_txt,
             "topics": self.topic_monitor.snapshot(),
+            "recording": self.rec_proc is not None,
+            "rec_name": self.rec_name,
         }
         self.status_pub.publish(String(data=json.dumps(status)))
 

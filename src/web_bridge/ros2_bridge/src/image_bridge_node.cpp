@@ -13,6 +13,7 @@ public:
     ImageBridgeNode() : Node("web_input_bridge_node") {
         publisher_ = this->create_publisher<sensor_msgs::msg::CompressedImage>("/human/camera/compressed", 10);
         reset_pub_ = this->create_publisher<std_msgs::msg::String>("/sim/reset", 10);
+        control_pub_ = this->create_publisher<std_msgs::msg::String>("/sys/control", 10);
 
         status_sub_ = this->create_subscription<std_msgs::msg::String>(
             "/sys/triage_status", 10,
@@ -72,7 +73,13 @@ private:
             if (n > 0) {
                 std_msgs::msg::String msg;
                 msg.data = std::string(buffer.data(), static_cast<size_t>(n));
-                reset_pub_->publish(msg);
+                // RESET goes to the sim supervisor; everything else (e.g.
+                // recording control) goes on the generic control topic so it
+                // never trips a scene reset.
+                if (msg.data == "RESET")
+                    reset_pub_->publish(msg);
+                else
+                    control_pub_->publish(msg);
                 RCLCPP_INFO(this->get_logger(), "Control command forwarded: %s", msg.data.c_str());
             }
         }
@@ -109,6 +116,7 @@ private:
 
     rclcpp::Publisher<sensor_msgs::msg::CompressedImage>::SharedPtr publisher_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr reset_pub_;
+    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr control_pub_;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr status_sub_;
     int server_fd_;
     int status_fd_;
