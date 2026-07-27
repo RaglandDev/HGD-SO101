@@ -11,10 +11,24 @@ sendCanvas.width = width;
 sendCanvas.height = height;
 var sendCtx = sendCanvas.getContext('2d');
 
-var ws = new WebSocket('ws://localhost:8080/ws');
+var wsProto = location.protocol === 'https:' ? 'wss://' : 'ws://';
+var ws = new WebSocket(wsProto + location.host + '/ws');
 var gaze = null;
 var pending = false;
 var fallbackTimeout;
+
+// Reachy POV MJPEG stream (simulation container, host port 5001)
+document.getElementById('pov').src =
+    location.protocol + '//' + location.hostname + ':5001/stream';
+
+var connStat = document.getElementById('conn-stat');
+var gestureStat = document.getElementById('gesture-stat');
+var armStat = document.getElementById('arm-stat');
+var chips = {
+    red: document.getElementById('chip-red'),
+    green: document.getElementById('chip-green'),
+    blue: document.getElementById('chip-blue'),
+};
 
 toggleBtn.onclick = function () {
     showVectors = !showVectors;
@@ -25,7 +39,8 @@ toggleBtn.onclick = function () {
 };
 
 navigator.mediaDevices.getUserMedia({ video: true })
-    .then(function (s) { video.srcObject = s; });
+    .then(function (s) { video.srcObject = s; })
+    .catch(function (e) { connStat.textContent = 'webcam error: ' + e.name; });
 
 function sendFrame() {
     if (ws.readyState === 1) {
@@ -47,8 +62,27 @@ function sendFrame() {
 }
 
 ws.onopen = function () {
+    connStat.textContent = 'connected';
     sendFrame();
 };
+
+ws.onclose = function () {
+    connStat.textContent = 'disconnected';
+};
+
+function updateStatus(d) {
+    for (var c in chips) {
+        chips[c].classList.toggle('gazed', d.zone === c);
+        chips[c].classList.toggle('selected', d.selected === c);
+    }
+    gestureStat.textContent = 'gesture: ' + (d.gesture || '—');
+    gestureStat.classList.toggle('active', d.gesture === 'HAND_RAISED');
+    armStat.textContent = 'arm: ' + (d.arm || '—');
+    armStat.classList.toggle('active', !!d.arm && d.arm !== 'IDLE');
+    connStat.textContent = d.gaze_fresh
+        ? ('gaze yaw ' + d.yaw_deg + '°')
+        : 'no face detected';
+}
 
 ws.onmessage = function (e) {
     try {
@@ -60,6 +94,8 @@ ws.onmessage = function (e) {
                 clearTimeout(fallbackTimeout);
                 requestAnimationFrame(sendFrame);
             }
+        } else if (m.t === "status") {
+            updateStatus(m.d);
         }
     } catch (x) { }
 };

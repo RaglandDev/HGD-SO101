@@ -1,22 +1,125 @@
 body {
+    margin: 0;
+    background-color: #14161a;
+    color: #e8e8e8;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+header {
+    text-align: center;
+    padding: 14px 0 4px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.hint {
+    color: #9aa3ad;
+    margin: 6px 0;
+    font-size: 14px;
+}
+
+#statusbar {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
-    margin: 0;
-    background-color: #f0f0f0;
+    gap: 18px;
+    padding: 8px;
+    background: #1d2026;
+    border-top: 1px solid #2b2f36;
+    border-bottom: 1px solid #2b2f36;
+    flex-wrap: wrap;
+}
+
+.chips {
+    display: flex;
+    gap: 8px;
+}
+
+.chip {
+    padding: 4px 14px;
+    border-radius: 14px;
+    border: 2px solid #444;
+    font-size: 13px;
+    opacity: 0.45;
+    transition: all 0.15s;
+}
+
+#chip-red { border-color: #e04444; }
+#chip-green { border-color: #3fbf4e; }
+#chip-blue { border-color: #4477e0; }
+
+.chip.gazed { opacity: 0.85; }
+
+.chip.selected {
+    opacity: 1;
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.25);
+}
+
+#chip-red.selected { background: #e04444; }
+#chip-green.selected { background: #3fbf4e; }
+#chip-blue.selected { background: #4477e0; }
+
+.stat {
+    font-size: 13px;
+    color: #c7ccd2;
+    font-variant-numeric: tabular-nums;
+}
+
+.stat.active {
+    color: #ffd75e;
+    font-weight: bold;
+}
+
+#toggleBtn {
+    background: #2b2f36;
+    color: #e8e8e8;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+main {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px;
+}
+
+.panel {
+    background: #1d2026;
+    border: 1px solid #2b2f36;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.panel h2 {
+    margin: 2px 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #9aa3ad;
+}
+
+.panel.wide {
+    flex-basis: 100%;
+    max-width: 1320px;
 }
 
 #container {
     position: relative;
     width: 640px;
     height: 480px;
-    margin-top: 20px;
 }
 
 #video {
     display: block;
+    border-radius: 4px;
+    transform: scaleX(-1);
 }
 
 #overlay {
@@ -24,4 +127,21 @@ body {
     top: 0;
     left: 0;
     pointer-events: none;
+    transform: scaleX(-1);
+}
+
+#pov {
+    width: 640px;
+    height: 480px;
+    object-fit: contain;
+    background: #000;
+    border-radius: 4px;
+}
+
+webots-view {
+    display: block;
+    width: 100%;
+    height: 560px;
+    background: #000;
+    border-radius: 4px;
 }

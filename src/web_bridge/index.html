@@ -2,19 +2,62 @@
 <html>
 
 <head>
-    <title>Head Pose</title>
+    <title>GGD-SO101 · Gesture &amp; Gaze Directed Pick-and-Place</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 
 <body>
-    <button id="toggleBtn">Enable Visualization</button>
+    <header>
+        <h1>Gesture &amp; Gaze Directed SO-101</h1>
+        <p class="hint">Look toward a cube to select it, then <b>raise your hand</b> to have the arm pick it up.</p>
+    </header>
 
-    <div id="container">
-        <video id="video" width="640" height="480" autoplay></video>
-        <canvas id="overlay" width="640" height="480"></canvas>
+    <div id="statusbar">
+        <div class="chips">
+            <span class="chip" id="chip-red">red</span>
+            <span class="chip" id="chip-green">green</span>
+            <span class="chip" id="chip-blue">blue</span>
+        </div>
+        <span class="stat" id="gesture-stat">gesture: —</span>
+        <span class="stat" id="arm-stat">arm: —</span>
+        <span class="stat" id="conn-stat">connecting…</span>
+        <button id="toggleBtn">Enable Visualization</button>
     </div>
 
+    <main>
+        <section class="panel">
+            <h2>You (webcam → perception)</h2>
+            <div id="container">
+                <video id="video" width="640" height="480" autoplay muted playsinline></video>
+                <canvas id="overlay" width="640" height="480"></canvas>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Reachy Mini POV (sim camera)</h2>
+            <img id="pov" src="" alt="Reachy POV stream (starts with the simulation)">
+        </section>
+
+        <section class="panel wide">
+            <h2>Simulation (Webots 3D stream)</h2>
+            <webots-view id="wview"></webots-view>
+            <p class="hint" id="wview-hint">Connecting to the Webots streaming server on ws://localhost:1234…</p>
+        </section>
+    </main>
+
     <script src="/static/script.js"></script>
+    <script type="module">
+        import "https://cyberbotics.com/wwi/R2023b/WebotsView.js";
+        const view = document.getElementById("wview");
+        const hint = document.getElementById("wview-hint");
+        try {
+            view.onready = () => { hint.textContent = ""; };
+            view.ondisconnect = () => { hint.textContent = "Webots stream disconnected."; };
+            view.connect("ws://localhost:1234");
+        } catch (e) {
+            hint.textContent = "Could not load the Webots 3D viewer: " + e;
+        }
+    </script>
 </body>
 
 </html>

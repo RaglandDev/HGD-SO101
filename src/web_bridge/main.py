@@ -19,7 +19,12 @@ gaze_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 gaze_socket.bind(("0.0.0.0", 9998))
 gaze_socket.setblocking(False)
 
-gaze_clients = []
+status_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+status_socket.bind(("0.0.0.0", 9997))
+status_socket.setblocking(False)
+
+ws_clients = []
+
 
 @app.get("/")
 async def get():
@@ -30,10 +35,11 @@ async def get():
         with open("/workspace/index.html", "r") as f:
             return HTMLResponse(content=f.read(), status_code=200)
 
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    gaze_clients.append(websocket)
+    ws_clients.append(websocket)
     print("WebSocket connected.")
     try:
         while True:
@@ -42,12 +48,24 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         print("WebSocket disconnected.")
     finally:
-        if websocket in gaze_clients:
-            gaze_clients.remove(websocket)
+        if websocket in ws_clients:
+            ws_clients.remove(websocket)
+
+
+async def broadcast(msg: str):
+    for c in list(ws_clients):
+        try:
+            await c.send_text(msg)
+        except Exception:
+            if c in ws_clients:
+                ws_clients.remove(c)
+
 
 @app.on_event("startup")
-async def start_gaze_relay():
+async def start_relays():
     asyncio.create_task(gaze_relay_loop())
+    asyncio.create_task(status_relay_loop())
+
 
 async def gaze_relay_loop():
     loop = asyncio.get_event_loop()
@@ -66,13 +84,24 @@ async def gaze_relay_loop():
                     "yaw": float(parts[9]),
                     "roll": float(parts[10]),
                 })
-                for c in list(gaze_clients):
-                    try:
-                        await c.send_text(msg)
-                    except Exception:
-                        if c in gaze_clients:
-                            gaze_clients.remove(c)
+                await broadcast(msg)
         except BlockingIOError:
             await asyncio.sleep(0.01)
         except Exception:
             await asyncio.sleep(0.01)
+
+
+async def status_relay_loop():
+    loop = asyncio.get_event_loop()
+    while True:
+        try:
+            data = await loop.run_in_executor(None, lambda: status_socket.recv(4096))
+            try:
+                payload = json.loads(data.decode("utf-8"))
+            except json.JSONDecodeError:
+                continue
+            await broadcast(json.dumps({"t": "status", "d": payload}))
+        except BlockingIOError:
+            await asyncio.sleep(0.02)
+        except Exception:
+            await asyncio.sleep(0.02)

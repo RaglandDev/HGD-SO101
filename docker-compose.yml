@@ -38,11 +38,12 @@ services:
     shm_size: '2gb' 
 
   triage_supervisor:
-    build: 
+    build:
       context: ./src/triage
     networks:
       - shared_autonomy_net
-    volumes:
-      - ./src/triage:/ros2_ws/src/triage
+    environment:
+      # flip to -1 if left/right selection feels mirrored on your webcam
+      - GAZE_YAW_SIGN=1
     depends_on:
       - simulation_control
