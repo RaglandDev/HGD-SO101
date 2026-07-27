@@ -245,15 +245,19 @@ webots.View = class View {
   // Functions for internal use.
 
   updateWorldList(currentWorld, worlds) {
+    const existingCurrentWorld = typeof this.currentWorld !== 'undefined';
+    // Upstream bug fix: these must be set even in broadcast mode, otherwise
+    // parsing any world that contains Mesh nodes crashes in MeshLoader
+    // ("worldsPath is undefined").
+    this.currentWorld = currentWorld;
+    ImageLoader.currentWorld = currentWorld;
+    MeshLoader.currentWorld = currentWorld;
+
     if (this.broadcast)
       // Do not show world list if in broadcast mode,
       // where multiple users can connect to the same Webots instance.
       return;
 
-    const existingCurrentWorld = typeof this.currentWorld !== 'undefined';
-    this.currentWorld = currentWorld;
-    ImageLoader.currentWorld = currentWorld;
-    MeshLoader.currentWorld = currentWorld;
     this.worlds = worlds;
 
     if (existingCurrentWorld) {
