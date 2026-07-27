@@ -231,6 +231,48 @@ webots-view {
     font-weight: 600;
 }
 
+.topic-row {
+    cursor: pointer;
+}
+
+.topic-row:hover td {
+    background: #22262d;
+}
+
+.caret {
+    color: #6c9cff;
+    display: inline-block;
+    width: 10px;
+}
+
+.topic-detail {
+    display: none;
+}
+
+.topic-detail.open {
+    display: table-row;
+}
+
+.topic-detail td {
+    padding: 0 12px 8px 34px;
+    border-bottom: 1px solid #2b2f36;
+}
+
+.stream {
+    margin: 0;
+    max-height: 190px;
+    overflow-y: auto;
+    background: #14161a;
+    border: 1px solid #2b2f36;
+    border-radius: 4px;
+    padding: 8px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #b8c0c8;
+    white-space: pre;
+}
+
 #recordings-table {
     width: 100%;
     border-collapse: collapse;
@@ -267,4 +309,8 @@ webots-view {
 
 .rec-actions a:hover {
     text-decoration: underline;
+}
+
+.rec-actions a.del {
+    color: #e0605f;
 }

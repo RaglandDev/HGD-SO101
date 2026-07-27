@@ -74,6 +74,18 @@ async def download_recording(name: str):
         filename=f"{name}.mcap",
         headers={"Access-Control-Allow-Origin": "*"})
 
+
+@app.delete("/recordings/{name}")
+async def delete_recording(name: str):
+    if "/" in name or ".." in name:
+        raise HTTPException(status_code=400, detail="bad name")
+    session_dir = os.path.join(RECORDINGS_DIR, name)
+    if not os.path.isdir(session_dir):
+        raise HTTPException(status_code=404, detail="not found")
+    import shutil
+    shutil.rmtree(session_dir)
+    return {"deleted": name}
+
 frame_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 control_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 

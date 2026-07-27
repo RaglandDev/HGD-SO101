@@ -42,7 +42,9 @@ from std_msgs.msg import String
 MONITORED_TOPICS = [
     ("/human/camera/compressed", CompressedImage, lambda m: f"{len(m.data)//1024} KB JPEG",
      "Webcam frames from the browser (WebSocket -> UDP -> ROS 2)"),
-    ("/human/head_pose", PoseStamped, lambda m: "head pose",
+    ("/human/head_pose", PoseStamped,
+     lambda m: (f"quat [{m.pose.orientation.x:+.2f} {m.pose.orientation.y:+.2f} "
+                f"{m.pose.orientation.z:+.2f} {m.pose.orientation.w:+.2f}]"),
      "Head pose estimated by the C++ perception node (YOLOv8-pose + solvePnP)"),
     ("/human/gesture", String, lambda m: m.data,
      "Raised-hand gesture classification (HAND_RAISED / DEFAULT)"),

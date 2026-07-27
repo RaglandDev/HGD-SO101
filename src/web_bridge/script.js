@@ -84,12 +84,24 @@ function loadRecordings() {
                 + '<td class="rec-actions">'
                 + '<a href="' + url + '" download>Download</a>'
                 + '<a href="' + fox + '" target="_blank" rel="noopener">Foxglove ↗</a>'
+                + '<a href="#" class="del" data-name="' + r.name + '">Delete</a>'
                 + '</td>'
                 + '</tr>';
         }
         recordingsBody.innerHTML = rows;
     }).catch(function () { });
 }
+
+recordingsBody.addEventListener('click', function (e) {
+    var el = e.target;
+    if (!el.classList.contains('del')) return;
+    e.preventDefault();
+    var name = el.getAttribute('data-name');
+    fetch('/recordings/' + encodeURIComponent(name), { method: 'DELETE' })
+        .then(function () { loadRecordings(); })
+        .catch(function () { });
+});
+
 loadRecordings();
 
 navigator.mediaDevices.getUserMedia({ video: true })
@@ -125,23 +137,73 @@ ws.onclose = function () {
 };
 
 var topicsBody = document.getElementById('topics-body');
+var topicLog = {};        // topic name -> [{ts, v}] rolling message stream
+var topicExpanded = {};   // topic name -> bool
+var topicsBuilt = false;
+
+function pushLog(name, v) {
+    var log = topicLog[name] || (topicLog[name] = []);
+    if (log.length && log[log.length - 1].v === v) return;  // only on change
+    log.push({ ts: new Date().toLocaleTimeString(), v: v });
+    if (log.length > 15) log.shift();
+}
+
+function buildTopicsTable(topics) {
+    var html = '';
+    for (var i = 0; i < topics.length; i++) {
+        var n = topics[i].n;
+        html += '<tr class="topic-row" data-topic="' + n + '">'
+            + '<td class="mono"><span class="caret">▸</span> ' + n + '</td>'
+            + '<td class="rate"></td>'
+            + '<td class="mono latest"></td>'
+            + '<td class="muted">' + topics[i].d + '</td>'
+            + '</tr>'
+            + '<tr class="topic-detail" data-topic="' + n + '"><td colspan="4">'
+            + '<pre class="stream"></pre></td></tr>';
+    }
+    topicsBody.innerHTML = html;
+    topicsBuilt = true;
+}
 
 function renderTopics(topics) {
     if (!topics || !topics.length) return;
-    var rows = '';
+    if (!topicsBuilt || topicsBody.querySelectorAll('.topic-row').length !== topics.length) {
+        buildTopicsTable(topics);
+    }
     for (var i = 0; i < topics.length; i++) {
         var t = topics[i];
+        pushLog(t.n, t.v);
+        var row = topicsBody.querySelector('.topic-row[data-topic="' + t.n + '"]');
+        if (!row) continue;
         var live = t.hz > 0.05;
-        rows += '<tr>'
-            + '<td class="mono">' + t.n + '</td>'
-            + '<td class="' + (live ? 'hz-live' : 'muted') + '">'
-            + (live ? t.hz.toFixed(1) + ' Hz' : 'idle') + '</td>'
-            + '<td class="mono">' + (t.v || '-') + '</td>'
-            + '<td class="muted">' + t.d + '</td>'
-            + '</tr>';
+        var rate = row.querySelector('.rate');
+        rate.textContent = live ? t.hz.toFixed(1) + ' Hz' : 'idle';
+        rate.className = 'rate ' + (live ? 'hz-live' : 'muted');
+        row.querySelector('.latest').textContent = t.v || '-';
+        if (topicExpanded[t.n]) {
+            var detail = topicsBody.querySelector('.topic-detail[data-topic="' + t.n + '"]');
+            var pre = detail.querySelector('.stream');
+            var log = topicLog[t.n] || [];
+            var lines = '';
+            for (var j = log.length - 1; j >= 0; j--) {
+                lines += log[j].ts + '   ' + log[j].v + '\n';
+            }
+            pre.textContent = lines || '(no messages yet)';
+        }
     }
-    topicsBody.innerHTML = rows;
 }
+
+topicsBody.addEventListener('click', function (e) {
+    var row = e.target.closest('.topic-row');
+    if (!row) return;
+    var name = row.getAttribute('data-topic');
+    topicExpanded[name] = !topicExpanded[name];
+    row.classList.toggle('expanded', topicExpanded[name]);
+    var caret = row.querySelector('.caret');
+    if (caret) caret.textContent = topicExpanded[name] ? '▾' : '▸';
+    var detail = topicsBody.querySelector('.topic-detail[data-topic="' + name + '"]');
+    if (detail) detail.classList.toggle('open', topicExpanded[name]);
+});
 
 function updateStatus(d) {
     if (d.msg) {

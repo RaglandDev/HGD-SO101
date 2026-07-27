@@ -13,8 +13,8 @@ services:
       - shared_autonomy_net
     volumes:
       - ./src/web_bridge:/app
-      # read-only access so the web server can list and serve MCAP recordings
-      - ./recordings:/recordings:ro
+      # the web server lists, serves, and deletes MCAP recordings
+      - ./recordings:/recordings
 
   perception_processor:
     restart: unless-stopped
