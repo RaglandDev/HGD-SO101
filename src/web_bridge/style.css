@@ -2,7 +2,7 @@ body {
     margin: 0;
     background-color: #14161a;
     color: #e8e8e8;
-    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 header {
@@ -37,13 +37,18 @@ header h1 {
 #statusbar {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 18px;
-    padding: 8px;
+    padding: 8px 16px;
     background: #1d2026;
     border-top: 1px solid #2b2f36;
     border-bottom: 1px solid #2b2f36;
     flex-wrap: wrap;
+}
+
+/* pin the action buttons to the right so changing stat text can't shove them */
+#recordBtn {
+    margin-left: auto;
 }
 
 .chips {
@@ -85,6 +90,15 @@ header h1 {
 .stat.active {
     color: #ffd75e;
     font-weight: bold;
+}
+
+/* fixed width + tabular figures so the gaze readout doesn't resize as the
+   number (or "no face detected") changes */
+#conn-stat {
+    display: inline-block;
+    min-width: 160px;
+    text-align: left;
+    font-variant-numeric: tabular-nums;
 }
 
 #resetBtn,
@@ -142,12 +156,11 @@ main {
 .panel.wide {
     flex-basis: 100%;
     max-width: 1320px;
-    /* explicit height: the wwi toolbar.css (injected after this sheet)
-       sets webots-view to height:100%, which collapses in an auto-height
-       container */
-    height: 620px;
     box-sizing: border-box;
 }
+
+/* the topics and recordings panels shrink to fit their content; only the
+   3D-view panel is tall (its webots-view carries an explicit 560px height) */
 
 #container {
     position: relative;
