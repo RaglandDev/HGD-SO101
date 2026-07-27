@@ -1,10 +1,13 @@
 """Streaming-server watchdog.
 
 Web clients connect to the Webots streaming server in broadcast (view-only)
-mode, and the server pauses the simulation whenever a client connects or the
-controlling client goes away. This watchdog stays connected as the permanent
-controlling client and immediately counters any pause with a real-time
-command, so the simulation keeps running no matter what browser tabs do.
+mode. The server pauses the simulation whenever a client connects or the
+controlling client goes away, and a broadcast client never resumes it. This
+watchdog stays connected as the controlling client and continuously
+re-asserts real-time mode, so the simulation keeps running no matter what
+browser tabs do. Polling (rather than reacting to pause messages) is
+deliberate: pause notifications do not always reach a secondary client, so
+re-asserting on a timer is the reliable option.
 """
 
 import asyncio
@@ -13,6 +16,20 @@ import websockets
 
 SERVER = "ws://127.0.0.1:1234"
 RUN_CMD = "real-time:-1"
+REASSERT_PERIOD_S = 1.0
+
+
+async def keep_running(ws):
+    while True:
+        await ws.send(RUN_CMD)
+        await asyncio.sleep(REASSERT_PERIOD_S)
+
+
+async def drain(ws):
+    # Read and discard server messages so the socket buffer never fills and
+    # applies backpressure to our sends.
+    async for _ in ws:
+        pass
 
 
 async def run():
@@ -20,16 +37,12 @@ async def run():
         try:
             async with websockets.connect(SERVER, max_size=None) as ws:
                 await ws.send("x3d")
-                await ws.send(RUN_CMD)
-                print("watchdog: connected, simulation set to real-time", flush=True)
-                async for msg in ws:
-                    if isinstance(msg, str) and (
-                            msg.startswith("pause") or msg == "paused by client"):
-                        await ws.send(RUN_CMD)
-                        print("watchdog: countered a pause", flush=True)
+                print("watchdog: connected, holding simulation in real-time",
+                      flush=True)
+                await asyncio.gather(keep_running(ws), drain(ws))
         except Exception as e:
             print(f"watchdog: reconnecting ({type(e).__name__})", flush=True)
-            await asyncio.sleep(3)
+            await asyncio.sleep(2)
 
 
 if __name__ == "__main__":
