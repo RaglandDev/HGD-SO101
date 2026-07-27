@@ -103,7 +103,7 @@ CLI equivalent:
 
 ## Manual testing without a webcam
 ```bash
-docker exec -it ggd-so101-supervisor-1 bash
+docker exec -it hgd-so101-supervisor-1 bash
 source /opt/ros/humble/setup.bash
 ros2 topic pub --once /so101/pick_cmd std_msgs/String "data: green"
 ros2 topic echo /so101/state

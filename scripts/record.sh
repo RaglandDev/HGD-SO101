@@ -9,7 +9,7 @@ set -e
 NAME="${1:-session_$(date +%Y%m%d_%H%M%S)}"
 
 echo "Recording all topics to ./recordings/${NAME}.mcap  (Ctrl-C to stop)"
-docker exec -it ggd-so101-supervisor-1 bash -c \
+docker exec -it hgd-so101-supervisor-1 bash -c \
   "source /opt/ros/humble/setup.bash && \
    ros2 bag record -s mcap -a --output /recordings/${NAME}"
 

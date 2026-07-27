@@ -1,3 +1,7 @@
+# pin the project name so container names stay stable (hgd-so101-*)
+# regardless of the folder the repo lives in
+name: hgd-so101
+
 networks:
   shared_autonomy_net:
     driver: bridge
