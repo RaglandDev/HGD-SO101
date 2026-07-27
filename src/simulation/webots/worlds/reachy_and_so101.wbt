@@ -11,8 +11,9 @@ WorldInfo {
   FPS 20
 }
 Viewpoint {
-  orientation -0.20 0.42 0.885 2.35
-  position 1.05 -0.95 1.45
+  orientation 0.9311 0.2081 0.2996 1.2819
+  position 0.75 -1.7 1.5
+  fieldOfView 0.85
 }
 Background {
   skyColor [
