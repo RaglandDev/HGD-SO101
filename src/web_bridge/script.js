@@ -27,14 +27,6 @@ var chips = {
     blue: document.getElementById('chip-blue'),
 };
 
-var pov = document.getElementById('pov');
-var povMirrorBtn = document.getElementById('povMirrorBtn');
-povMirrorBtn.onclick = function () {
-    pov.classList.toggle('mirrored');
-    povMirrorBtn.textContent = 'mirror: ' +
-        (pov.classList.contains('mirrored') ? 'on' : 'off');
-};
-
 resetBtn.onclick = function () {
     if (ws.readyState === 1) {
         ws.send(JSON.stringify({ t: 'reset' }));

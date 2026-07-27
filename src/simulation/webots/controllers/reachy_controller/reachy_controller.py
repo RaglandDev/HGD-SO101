@@ -117,7 +117,7 @@ class ReachyController(Node):
         w, h = self.camera.getWidth(), self.camera.getHeight()
         bgra = np.frombuffer(raw, np.uint8).reshape((h, w, 4))
         bgr = bgra[:, :, :3]
-        ok, jpeg = cv2.imencode(".jpg", bgr, [cv2.IMWRITE_JPEG_QUALITY, 70])
+        ok, jpeg = cv2.imencode(".jpg", bgr, [cv2.IMWRITE_JPEG_QUALITY, 88])
         if not ok:
             return
         with _jpeg_lock:
