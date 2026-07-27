@@ -145,10 +145,21 @@ main {
     object-fit: contain;
     background: #000;
     border-radius: 4px;
-    /* Reachy faces the viewer, so its camera sees the scene left/right
-       swapped relative to the 3D view; mirror it so the red/green/blue
-       order matches everywhere on the page */
+}
+
+#pov.mirrored {
     transform: scaleX(-1);
+}
+
+.mini-btn {
+    background: #2b2f36;
+    color: #9aa3ad;
+    border: 1px solid #444;
+    border-radius: 5px;
+    padding: 2px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    margin-left: 8px;
 }
 
 webots-view {
