@@ -20,6 +20,6 @@ WORLD_PATH="/ros2_ws/src/simulation/webots/worlds/reachy_and_so101.wbt"
 
 echo "Starting Webots simulation on port 1234..."
 
-webots --batch --stdout --stderr --mode=realtime --port=1234 --stream "$WORLD_PATH"
+webots --batch --stdout --stderr --no-rendering --mode=realtime --port=1234 --stream "$WORLD_PATH"
 
 kill $XVFB_PID

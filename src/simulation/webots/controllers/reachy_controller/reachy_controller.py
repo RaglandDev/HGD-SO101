@@ -26,8 +26,8 @@ from sensor_msgs.msg import CompressedImage, JointState
 from controller import Robot
 
 TIME_STEP_MS = 32
-CAMERA_PUBLISH_EVERY_N_STEPS = 3   # ~10 Hz
-NECK_SMOOTHING = 0.12              # low-pass factor per step
+CAMERA_PUBLISH_EVERY_N_STEPS = 6   # ~5 Hz (camera renders are costly under emulation)
+NECK_SMOOTHING = 0.2               # low-pass factor per step
 IDLE_TIMEOUT_S = 5.0               # start idle scan if no command for this long
 PITCH_LIMITS = (-0.6, 0.6)
 YAW_LIMITS = (-2.6, 2.6)

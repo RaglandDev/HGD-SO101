@@ -21,6 +21,7 @@ var fallbackTimeout;
 document.getElementById('pov').src =
     location.protocol + '//' + location.hostname + ':5001/stream';
 
+var banner = document.getElementById('banner');
 var connStat = document.getElementById('conn-stat');
 var gestureStat = document.getElementById('gesture-stat');
 var armStat = document.getElementById('arm-stat');
@@ -71,6 +72,10 @@ ws.onclose = function () {
 };
 
 function updateStatus(d) {
+    if (d.msg) {
+        banner.textContent = d.msg;
+        banner.classList.toggle('picking', !!d.arm && d.arm.indexOf('PICK') === 0);
+    }
     for (var c in chips) {
         chips[c].classList.toggle('gazed', d.zone === c);
         chips[c].classList.toggle('selected', d.selected === c);

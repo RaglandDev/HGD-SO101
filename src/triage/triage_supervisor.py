@@ -35,9 +35,9 @@ TABLE_PITCH = 0.32                                             # rad, look down
 YAW_SIGN = float(os.environ.get("GAZE_YAW_SIGN", "1"))
 ZONE_ENTER_DEG = float(os.environ.get("ZONE_ENTER_DEG", "12"))
 ZONE_EXIT_DEG = float(os.environ.get("ZONE_EXIT_DEG", "8"))
-DWELL_S = float(os.environ.get("DWELL_S", "0.7"))
-GESTURE_HOLD_S = float(os.environ.get("GESTURE_HOLD_S", "0.35"))
-COOLDOWN_S = float(os.environ.get("COOLDOWN_S", "5.0"))
+DWELL_S = float(os.environ.get("DWELL_S", "0.4"))
+GESTURE_HOLD_S = float(os.environ.get("GESTURE_HOLD_S", "0.2"))
+COOLDOWN_S = float(os.environ.get("COOLDOWN_S", "2.5"))
 GAZE_TIMEOUT_S = 1.5
 
 
@@ -61,6 +61,7 @@ class TriageSupervisor(Node):
         self.selected = None        # dwelled selection
         self.gesture = "DEFAULT"
         self.gesture_since = 0.0
+        self.gesture_consumed = False  # each raise fires at most one pick
         self.arm_state = "UNKNOWN"
         self.last_trigger = 0.0
 
@@ -116,6 +117,8 @@ class TriageSupervisor(Node):
         if msg.data != self.gesture:
             self.gesture = msg.data
             self.gesture_since = time.monotonic()
+            if msg.data == "DEFAULT":
+                self.gesture_consumed = False
 
     def on_arm_state(self, msg):
         self.arm_state = msg.data
@@ -140,17 +143,34 @@ class TriageSupervisor(Node):
             self.neck_pub.publish(neck)
         # (when stale, publish nothing: reachy falls back to its idle scan)
 
-        # pick trigger
+        # pick trigger: a raised hand is a momentary "go" signal (edge
+        # triggered after a short debounce); the sequence then runs on its
+        # own and the hand can come down. Re-triggering requires lowering
+        # the hand first.
         armed = (self.selected is not None
                  and self.arm_state == "IDLE"
                  and (now - self.last_trigger) > COOLDOWN_S)
         triggered = False
-        if (armed and self.gesture == "HAND_RAISED"
+        if (armed and not self.gesture_consumed
+                and self.gesture == "HAND_RAISED"
                 and (now - self.gesture_since) >= GESTURE_HOLD_S):
             self.pick_pub.publish(String(data=self.selected))
             self.last_trigger = now
+            self.gesture_consumed = True
             triggered = True
             self.get_logger().info(f"PICK triggered: {self.selected}")
+
+        if not gaze_fresh:
+            msg_txt = "no face detected - look at the camera"
+        elif self.arm_state.startswith("PICK"):
+            color = self.arm_state.split(":")[1] if ":" in self.arm_state else ""
+            msg_txt = f"picking {color} - you can relax"
+        elif self.selected is None:
+            msg_txt = "look toward a cube to select it"
+        elif armed:
+            msg_txt = f"{self.selected} selected - raise a hand to pick"
+        else:
+            msg_txt = "arm getting ready..."
 
         status = {
             "gaze_fresh": gaze_fresh,
@@ -162,6 +182,7 @@ class TriageSupervisor(Node):
             "arm": self.arm_state,
             "armed": armed,
             "triggered": triggered,
+            "msg": msg_txt,
         }
         self.status_pub.publish(String(data=json.dumps(status)))
 

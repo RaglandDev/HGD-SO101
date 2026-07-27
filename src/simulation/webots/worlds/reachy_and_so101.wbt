@@ -7,7 +7,8 @@ EXTERNPROTO "../protos/ReachyMini.proto"
 
 WorldInfo {
   title "Gesture-and-Gaze-Directed SO-101 via Reachy Mini"
-  basicTimeStep 16
+  basicTimeStep 32
+  FPS 20
 }
 Viewpoint {
   orientation -0.20 0.42 0.885 2.35
@@ -22,7 +23,6 @@ DirectionalLight {
   ambientIntensity 0.9
   intensity 1.6
   direction -0.4 -0.3 -1
-  castShadows TRUE
 }
 DirectionalLight {
   intensity 0.6

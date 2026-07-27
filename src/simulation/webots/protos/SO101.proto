@@ -384,124 +384,29 @@ PROTO SO101 [
                                           }
                                         ]
                                         name "moving_jaw_so101_v1_link"
-                                        boundingObject USE moving_jaw_so101_v1
-                                        physics Physics {
-                                          density -1
-                                          mass 0.012000
-                                          centerOfMass [ -0.001575 -0.030024 0.019276 ]
-                                          inertiaMatrix [
-                                            6.614270e-06 1.890320e-06 5.287380e-06
-                                            -3.198070e-07 -5.907170e-09 -1.099450e-07
-                                          ]
-                                        }
                                       }
                                     }
                                   ]
                                   name "gripper_link"
-                                  boundingObject Group {
-                                    children [
-                                      USE sts3215_03a_v1
-                                      USE wrist_roll_follower_so101_v1
-                                    ]
-                                  }
-                                  physics Physics {
-                                    density -1
-                                    mass 0.087000
-                                    centerOfMass [ 0.000214 0.000245 -0.025187 ]
-                                    inertiaMatrix [
-                                      2.750870e-05 4.336570e-05 3.450590e-05
-                                      -3.352410e-07 -5.735200e-06 -5.178470e-08
-                                    ]
-                                  }
                                 }
                               }
                             ]
                             name "wrist_link"
-                            boundingObject Group {
-                              children [
-                                USE sts3215_03a_no_horn_v1
-                                USE wrist_roll_pitch_so101_v2
-                              ]
-                            }
-                            physics Physics {
-                              density -1
-                              mass 0.079000
-                              centerOfMass [ -0.000103 -0.038614 0.028116 ]
-                              inertiaMatrix [
-                                3.682630e-05 2.539100e-05 2.100000e-05
-                                1.789300e-08 -5.281280e-08 3.641200e-06
-                              ]
-                            }
                           }
                         }
                       ]
                       name "lower_arm_link"
-                      boundingObject Group {
-                        children [
-                          USE under_arm_so101_v1
-                          USE motor_holder_so101_wrist_v1
-                          USE sts3215_03a_v1
-                        ]
-                      }
-                      physics Physics {
-                        density -1
-                        mass 0.104000
-                        centerOfMass [ -0.098070 0.003244 0.018283 ]
-                        inertiaMatrix [
-                          2.874380e-05 1.598440e-04 1.452900e-04
-                          7.411520e-06 1.264090e-06 -4.901880e-08
-                        ]
-                      }
                     }
                   }
                 ]
                 name "upper_arm_link"
-                boundingObject Group {
-                  children [
-                    USE sts3215_03a_v1
-                    USE upper_arm_so101_v1
-                  ]
-                }
-                physics Physics {
-                  density -1
-                  mass 0.103000
-                  centerOfMass [ -0.089847 -0.008382 0.018409 ]
-                  inertiaMatrix [
-                    4.080020e-05 1.473180e-04 1.424870e-04
-                    -1.978190e-05 -4.030160e-08 8.973260e-09
-                  ]
-                }
               }
             }
           ]
           name "shoulder_link"
-          boundingObject Group {
-            children [
-              USE sts3215_03a_v1
-              USE motor_holder_so101_base_v1
-              USE rotation_pitch_so101_v1
-            ]
-          }
-          physics Physics {
-            density -1
-            mass 0.100006
-            centerOfMass [ -0.030760 -0.000017 -0.025271 ]
-            inertiaMatrix [
-              8.375900e-05 8.104030e-05 2.397830e-05
-              7.555250e-08 -1.163420e-06 1.546630e-07
-            ]
-          }
         }
       }
     ]
     name IS name
-    boundingObject Group {
-      children [
-        USE base_motor_holder_so101_v1
-        USE base_so101_v2
-        USE sts3215_03a_v1
-        USE waveshare_mounting_plate_so101_v2
-      ]
-    }
   }
 }

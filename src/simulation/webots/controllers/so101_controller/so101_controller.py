@@ -99,8 +99,8 @@ class So101Controller(Node):
             self.motors[j] = robot.getDevice(j)
             self.sensors[j] = robot.getDevice(j + "_sensor")
             self.sensors[j].enable(TIME_STEP_MS)
-            self.motors[j].setVelocity(1.5)
-        self.motors["gripper"].setVelocity(3.0)
+            self.motors[j].setVelocity(3.0)
+        self.motors["gripper"].setVelocity(5.0)
 
         self.grip_site = robot.getFromDef("GRIP_SITE")
         self.cubes = {c: robot.getFromDef(d) for c, d in CUBE_DEFS.items()}
@@ -146,13 +146,13 @@ class So101Controller(Node):
 
         self.picking = color
         self.plan = [
-            ("HOVER",    h_ik, GRIPPER_OPEN,   2.5, None),
-            ("DESCEND",  g_ik, GRIPPER_OPEN,   2.0, None),
-            ("GRASP",    g_ik, GRIPPER_CLOSED, 1.2, "attach"),
-            ("LIFT",     h_ik, GRIPPER_CLOSED, 1.5, None),
-            ("TO_TRAY",  t_ik, GRIPPER_CLOSED, 3.0, None),
-            ("RELEASE",  t_ik, GRIPPER_OPEN,   1.0, "detach"),
-            ("HOME",     self.home[:4], GRIPPER_OPEN, 2.5, None),
+            ("HOVER",    h_ik, GRIPPER_OPEN,   1.4, None),
+            ("DESCEND",  g_ik, GRIPPER_OPEN,   1.0, None),
+            ("GRASP",    g_ik, GRIPPER_CLOSED, 0.7, "attach"),
+            ("LIFT",     h_ik, GRIPPER_CLOSED, 0.8, None),
+            ("TO_TRAY",  t_ik, GRIPPER_CLOSED, 1.6, None),
+            ("RELEASE",  t_ik, GRIPPER_OPEN,   0.6, "detach"),
+            ("HOME",     self.home[:4], GRIPPER_OPEN, 1.4, None),
         ]
         self.next_phase()
 
@@ -164,7 +164,7 @@ class So101Controller(Node):
         self.phase = "STOPPED"
         self.set_arm(self.home)
         self.set_gripper(GRIPPER_OPEN)
-        self.phase_end = self.robot.getTime() + 2.5
+        self.phase_end = self.robot.getTime() + 1.5
         self.state = "STOPPING"
 
     # --- state machine ------------------------------------------------------
