@@ -252,13 +252,12 @@ webots.View = class View {
     this.currentWorld = currentWorld;
     ImageLoader.currentWorld = currentWorld;
     MeshLoader.currentWorld = currentWorld;
+    this.worlds = worlds;
 
     if (this.broadcast)
-      // Do not show world list if in broadcast mode,
+      // Do not refresh the world selection pane in broadcast mode,
       // where multiple users can connect to the same Webots instance.
       return;
-
-    this.worlds = worlds;
 
     if (existingCurrentWorld) {
       const webotsView = document.getElementsByTagName('webots-view')[0];
