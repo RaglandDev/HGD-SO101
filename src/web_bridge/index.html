@@ -44,6 +44,21 @@
             <webots-view id="wview"></webots-view>
             <p class="hint" id="wview-hint">Connecting to the Webots streaming server on ws://localhost:1234…</p>
         </section>
+
+        <section class="panel wide">
+            <h2>Live ROS 2 topics</h2>
+            <p class="hint">The messages flowing through the pipeline right now. Rates update live.</p>
+            <div class="table-scroll">
+                <table id="topics-table">
+                    <thead>
+                        <tr><th>Topic</th><th>Rate</th><th>Latest</th><th>What it carries</th></tr>
+                    </thead>
+                    <tbody id="topics-body">
+                        <tr><td colspan="4" class="muted">waiting for telemetry…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </main>
 
     <script src="/static/script.js"></script>

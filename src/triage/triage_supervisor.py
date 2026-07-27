@@ -10,7 +10,8 @@ Bridges human perception to the simulated robots:
     Reachy Mini head looks at whatever object the human is looking at
   - publishes /so101/pick_cmd (std_msgs/String) when the human confirms with a
     raised hand
-  - publishes /sys/triage_status (std_msgs/String, JSON) for the web UI
+  - publishes /sys/triage_status (std_msgs/String, JSON) for the web UI,
+    including a live telemetry snapshot of every pipeline topic
 
 Selection logic: the human's head yaw is quantized into three gaze zones
 (left / center / right -> red / green / blue cube). A zone held for DWELL_S
@@ -22,11 +23,72 @@ import json
 import math
 import os
 import time
+from collections import deque
 
 import rclpy
 from geometry_msgs.msg import PoseStamped, Vector3
 from rclpy.node import Node
+from sensor_msgs.msg import CompressedImage, JointState
 from std_msgs.msg import String
+
+
+# Pipeline topics surfaced live on the demo page: (topic, type, summary_fn,
+# one-line explanation). Order is the display order.
+MONITORED_TOPICS = [
+    ("/human/camera/compressed", CompressedImage, lambda m: f"{len(m.data)//1024} KB JPEG",
+     "Webcam frames from the browser (WebSocket -> UDP -> ROS 2)"),
+    ("/human/gaze", PoseStamped, lambda m: "head pose",
+     "Head pose estimated by the C++ perception node (YOLOv8-pose + solvePnP)"),
+    ("/human/gesture", String, lambda m: m.data,
+     "Raised-hand gesture classification (HAND_RAISED / DEFAULT)"),
+    ("/reachy/neck_cmd", Vector3, lambda m: f"yaw {m.x:+.2f} pitch {m.y:+.2f}",
+     "Neck command so Reachy Mini turns toward the gazed object"),
+    ("/reachy/camera/compressed", CompressedImage, lambda m: f"{len(m.data)//1024} KB JPEG",
+     "Reachy Mini head-camera POV stream"),
+    ("/so101/pick_cmd", String, lambda m: m.data,
+     "Pickup command, issued the instant a gesture is confirmed"),
+    ("/so101/state", String, lambda m: m.data,
+     "SO-101 pick state machine (IDLE, PICK:color:phase)"),
+    ("/joint_states", JointState, lambda m: f"{len(m.name)} joints",
+     "Live joint angles streamed by both robot controllers"),
+    ("/sys/triage_status", String, lambda m: "JSON",
+     "This supervisor's status feed powering the demo page"),
+]
+
+
+class TopicMonitor:
+    """Tracks per-topic publish rate and a short latest-value summary so the
+    web page can show the ROS 2 graph coming alive in real time."""
+
+    def __init__(self, node):
+        self.entries = {}
+        for topic, mtype, summarize, desc in MONITORED_TOPICS:
+            self.entries[topic] = {"times": deque(maxlen=60), "latest": "-",
+                                   "desc": desc, "summarize": summarize}
+            node.create_subscription(mtype, topic, self._callback(topic), 10)
+
+    def _callback(self, topic):
+        entry = self.entries[topic]
+
+        def cb(msg):
+            entry["times"].append(time.monotonic())
+            try:
+                entry["latest"] = entry["summarize"](msg)
+            except Exception:
+                pass
+        return cb
+
+    def snapshot(self):
+        now = time.monotonic()
+        out = []
+        for topic, e in self.entries.items():
+            recent = [t for t in e["times"] if now - t < 2.0]
+            hz = 0.0
+            if len(recent) >= 2 and recent[-1] > recent[0]:
+                hz = (len(recent) - 1) / (recent[-1] - recent[0])
+            out.append({"n": topic, "hz": round(hz, 1),
+                        "v": e["latest"], "d": e["desc"]})
+        return out
 
 # world geometry: bearing of each cube as seen from the Reachy Mini head
 OBJECT_BEARINGS = {"red": -0.25, "green": 0.0, "blue": 0.25}   # rad
@@ -72,6 +134,8 @@ class TriageSupervisor(Node):
         self.neck_pub = self.create_publisher(Vector3, "/reachy/neck_cmd", 10)
         self.pick_pub = self.create_publisher(String, "/so101/pick_cmd", 10)
         self.status_pub = self.create_publisher(String, "/sys/triage_status", 10)
+
+        self.topic_monitor = TopicMonitor(self)
 
         self.create_timer(0.1, self.tick)
         self.get_logger().info("Triage supervisor ready")
@@ -183,6 +247,7 @@ class TriageSupervisor(Node):
             "armed": armed,
             "triggered": triggered,
             "msg": msg_txt,
+            "topics": self.topic_monitor.snapshot(),
         }
         self.status_pub.publish(String(data=json.dumps(status)))
 

@@ -161,3 +161,42 @@ webots-view {
     border-radius: 4px;
     overflow: hidden;
 }
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+#topics-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+#topics-table th,
+#topics-table td {
+    text-align: left;
+    padding: 6px 12px;
+    border-bottom: 1px solid #2b2f36;
+    white-space: nowrap;
+}
+
+#topics-table th {
+    color: #9aa3ad;
+    font-weight: 600;
+    border-bottom: 1px solid #3a3f48;
+}
+
+#topics-table .mono {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+#topics-table .muted {
+    color: #8a919b;
+    white-space: normal;
+}
+
+#topics-table .hz-live {
+    color: #6fe08a;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}

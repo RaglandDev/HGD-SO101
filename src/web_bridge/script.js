@@ -66,11 +66,31 @@ ws.onclose = function () {
     connStat.textContent = 'disconnected';
 };
 
+var topicsBody = document.getElementById('topics-body');
+
+function renderTopics(topics) {
+    if (!topics || !topics.length) return;
+    var rows = '';
+    for (var i = 0; i < topics.length; i++) {
+        var t = topics[i];
+        var live = t.hz > 0.05;
+        rows += '<tr>'
+            + '<td class="mono">' + t.n + '</td>'
+            + '<td class="' + (live ? 'hz-live' : 'muted') + '">'
+            + (live ? t.hz.toFixed(1) + ' Hz' : 'idle') + '</td>'
+            + '<td class="mono">' + (t.v || '-') + '</td>'
+            + '<td class="muted">' + t.d + '</td>'
+            + '</tr>';
+    }
+    topicsBody.innerHTML = rows;
+}
+
 function updateStatus(d) {
     if (d.msg) {
         banner.textContent = d.msg;
         banner.classList.toggle('picking', !!d.arm && d.arm.indexOf('PICK') === 0);
     }
+    if (d.topics) renderTopics(d.topics);
     for (var c in chips) {
         chips[c].classList.toggle('gazed', d.zone === c);
         chips[c].classList.toggle('selected', d.selected === c);
