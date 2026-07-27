@@ -19,9 +19,11 @@ seconds becomes the selected object. A raised hand held for GESTURE_HOLD_S
 seconds triggers the pick, with a cooldown while the arm is busy.
 """
 
+import glob
 import json
 import math
 import os
+import shutil
 import signal
 import subprocess
 import time
@@ -104,6 +106,7 @@ DWELL_S = float(os.environ.get("DWELL_S", "0.4"))
 GESTURE_HOLD_S = float(os.environ.get("GESTURE_HOLD_S", "0.2"))
 COOLDOWN_S = float(os.environ.get("COOLDOWN_S", "2.5"))
 RECORDINGS_DIR = os.environ.get("RECORDINGS_DIR", "/recordings")
+MAX_RECORDINGS = int(os.environ.get("MAX_RECORDINGS", "5"))
 GAZE_TIMEOUT_S = 1.5
 
 
@@ -180,6 +183,19 @@ class TriageSupervisor(Node):
         self.get_logger().info(f"recording stopped -> {self.rec_name}.mcap")
         self.rec_proc = None
         self.rec_name = None
+        self.prune_recordings()
+
+    def prune_recordings(self):
+        """Keep only the MAX_RECORDINGS newest sessions on disk."""
+        dirs = [d for d in glob.glob(os.path.join(RECORDINGS_DIR, "*"))
+                if os.path.isdir(d)]
+        dirs.sort(key=os.path.getmtime, reverse=True)
+        for old in dirs[MAX_RECORDINGS:]:
+            try:
+                shutil.rmtree(old)
+                self.get_logger().info(f"pruned old recording {os.path.basename(old)}")
+            except OSError as e:
+                self.get_logger().warn(f"could not prune {old}: {e}")
         self.get_logger().info("Triage supervisor ready")
 
     # --- inputs -------------------------------------------------------------
@@ -238,6 +254,7 @@ class TriageSupervisor(Node):
         if self.rec_proc is not None and self.rec_proc.poll() is not None:
             self.rec_proc = None
             self.rec_name = None
+            self.prune_recordings()
 
         if gaze_fresh and self.zone is not None:
             if now - self.zone_since >= DWELL_S:
