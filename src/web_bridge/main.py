@@ -83,8 +83,11 @@ async def recordings():
     return JSONResponse(_list_recordings())
 
 
-@app.get("/recordings/{name}")
+@app.get("/recordings/{name}.mcap")
 async def download_recording(name: str):
+    # URL ends in .mcap so the browser's `download` attribute saves a correctly
+    # named file (and any URL-based loader recognizes the format). `name` is the
+    # session dir without the extension.
     session_dir = _resolve_session_dir(name)
     mcaps = glob.glob(os.path.join(session_dir, "*.mcap"))
     if not mcaps:

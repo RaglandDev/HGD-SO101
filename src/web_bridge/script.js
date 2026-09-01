@@ -81,7 +81,7 @@ function loadRecordings() {
         var rows = '';
         for (var i = 0; i < list.length; i++) {
             var r = list[i];
-            var url = location.origin + '/recordings/' + encodeURIComponent(r.name);
+            var url = location.origin + '/recordings/' + encodeURIComponent(r.name) + '.mcap';
             var fox = 'https://app.foxglove.dev/~/view?ds=remote-file&ds.url='
                 + encodeURIComponent(url);
             rows += '<tr>'
