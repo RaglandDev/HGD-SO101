@@ -74,13 +74,14 @@ services:
     networks:
       - shared_autonomy_net
     environment:
-      # Force Mesa software rendering (no GPU on a cloud VM). We use softpipe,
-      # not llvmpipe: the Ubuntu-22.04-era llvmpipe JIT segfaults Webots' GL
-      # init on real modern cloud CPUs (AVX2/AVX-512 codegen), even capped to
-      # 128-bit vectors — it only survived under QEMU on Apple Silicon. softpipe
-      # is a non-JIT reference rasterizer: slower, but it can't hit that bug.
+      # Force Mesa software rendering (no GPU on a cloud VM). Use llvmpipe (JIT,
+      # fast) — the earlier crashes were the Webots X3D exporter null-deref, not
+      # llvmpipe, so it's safe now that x3d streaming is gone. Cap the JIT to
+      # 128-bit vectors as a conservative guard against AVX-512 codegen bugs on
+      # cloud CPUs. (softpipe, the non-JIT rasterizer, works but is far slower.)
       - LIBGL_ALWAYS_SOFTWARE=1
-      - GALLIUM_DRIVER=softpipe
+      - GALLIUM_DRIVER=llvmpipe
+      - LP_NATIVE_VECTOR_WIDTH=128
     volumes:
       - ./src/simulation:/ros2_ws/src/simulation
     # CRITICAL: Required for 3D software rendering (Webots + Xvfb)
