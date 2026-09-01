@@ -73,6 +73,15 @@ services:
       - "5000"
     networks:
       - shared_autonomy_net
+    environment:
+      # Force Mesa software rendering (no GPU on a cloud VM) and cap llvmpipe's
+      # JIT to 128-bit vectors. On real modern cloud CPUs the AVX2/AVX-512 code
+      # paths in the Ubuntu-22.04-era llvmpipe segfault Webots' GL init; SSE-width
+      # codegen is stable. (Not hit under QEMU on Apple Silicon, which exposes a
+      # generic CPU.) If it still crashes, set GALLIUM_DRIVER=softpipe.
+      - LIBGL_ALWAYS_SOFTWARE=1
+      - GALLIUM_DRIVER=llvmpipe
+      - LP_NATIVE_VECTOR_WIDTH=128
     volumes:
       - ./src/simulation:/ros2_ws/src/simulation
     # CRITICAL: Required for 3D software rendering (Webots + Xvfb)
