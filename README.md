@@ -10,6 +10,8 @@ raised-hand gesture. A supervisor node quantizes your head direction into object
 and a Webots simulation executes the pick with an analytically solved
 top-down grasp. Everything runs in Docker.
 
+## Demo
+[Youtube link](https://www.youtube.com/watch?v=YdT8MGNUFA0)
 ## Requirements
 - Docker Engine (Linux) or Docker Desktop
 - A web browser with webcam and WebSockets support
