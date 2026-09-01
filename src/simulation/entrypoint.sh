@@ -23,6 +23,12 @@ echo "Starting Webots simulation on port 1234..."
 # keeps the sim running: counters any pause caused by web clients
 python3 /ros2_ws/src/simulation/watchdog.py &
 
-webots --batch --stdout --stderr --no-rendering --mode=realtime --port=1234 --stream "$WORLD_PATH"
+# NOTE: do NOT pass --no-rendering. The X3D web stream exports the rendered
+# scene tree; with --no-rendering that tree is never built, and Webots R2023b
+# null-derefs during X3D export the moment a client (the watchdog) sets x3d
+# mode. It "worked" under QEMU on Apple Silicon only because the uninitialized
+# pointer happened to be non-null there; on a real x86 host it segfaults.
+# Rendering is done offscreen against Xvfb + Mesa software GL.
+webots --batch --stdout --stderr --mode=realtime --port=1234 --stream "$WORLD_PATH"
 
 kill $XVFB_PID
