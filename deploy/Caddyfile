@@ -9,6 +9,15 @@
 # Encrypt cert; ":443" serves a self-signed cert from Caddy's local CA (fine
 # for a private demo — accept the browser warning, it's still a secure context).
 
+{
+	# Disable HTTP/3 (QUIC). On this VM the UDP receive buffer is too small for
+	# QUIC, so Chrome — which eagerly upgrades to h3 via alt-svc — fails follow-up
+	# requests like file downloads ("site can't be reached"), while h2 works fine.
+	servers {
+		protocols h1 h2
+	}
+}
+
 {$SITE_ADDRESS} {
 	encode zstd gzip
 
