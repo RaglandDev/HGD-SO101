@@ -82,8 +82,6 @@ function loadRecordings() {
         for (var i = 0; i < list.length; i++) {
             var r = list[i];
             var url = location.origin + '/recordings/' + encodeURIComponent(r.name) + '.mcap';
-            var fox = 'https://app.foxglove.dev/~/view?ds=remote-file&ds.url='
-                + encodeURIComponent(url);
             rows += '<tr>'
                 + '<td class="mono">' + esc(r.name) + '</td>'
                 + '<td>' + (r.duration_s != null ? r.duration_s + ' s' : '—') + '</td>'
@@ -92,7 +90,6 @@ function loadRecordings() {
                 + '<td>' + humanSize(r.size_bytes) + '</td>'
                 + '<td class="rec-actions">'
                 + '<a href="' + esc(url) + '" download>Download</a>'
-                + '<a href="' + esc(fox) + '" target="_blank" rel="noopener">Foxglove ↗</a>'
                 + '<a href="#" class="del" data-name="' + esc(r.name) + '">Delete</a>'
                 + '</td>'
                 + '</tr>';

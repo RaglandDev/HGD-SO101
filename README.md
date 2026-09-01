@@ -72,15 +72,15 @@ MCAP storage plugin is installed there), and the `.mcap` lands in
 
 Finished captures appear in the **Recorded sessions** panel on the page with
 their duration, message count, topic count, and size. Each row has:
-- **Download** — the web server streams the `.mcap` straight to your browser
-  (works over the network, so a visitor on a deployed site can grab it — no
-  server shell access needed).
-- **Foxglove ↗** — opens the recording directly in
-  [Foxglove Studio](https://foxglove.dev) via its remote-file URL. This requires
-  the download to be fetchable cross-origin by Foxglove, which the Basic-auth
-  login on a deployed host blocks — so in practice use **Download** and open the
-  file in Foxglove manually. (CORS on the download is scoped to the Foxglove
-  origin via `FOXGLOVE_ORIGIN`, not `*`.)
+- **Download** — streams the `.mcap` to your browser (served at
+  `/recordings/{name}.mcap` so it saves with the right extension). Then open it
+  in [Foxglove Studio](https://foxglove.dev) via **File → Open local file**.
+- **Delete** — removes the session.
+
+(Foxglove's one-click *remote* open isn't offered on a deployed host: its
+cross-origin fetch can't pass the Basic-auth login. Download + open-local is the
+path. CORS on the download is still scoped to the Foxglove origin via
+`FOXGLOVE_ORIGIN`, not `*`.)
 
 CLI equivalent:
 
