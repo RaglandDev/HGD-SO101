@@ -17,6 +17,10 @@ import websockets
 SERVER = "ws://127.0.0.1:1234"
 RUN_CMD = "real-time:-1"
 REASSERT_PERIOD_S = 3.0
+# Use mjpeg (server-side rendered video), NOT x3d: Webots R2023b null-derefs in
+# the X3D scene exporter on real x86 hardware the moment a client sets x3d mode.
+# mjpeg renders through GL (which works) and never touches that code path.
+STREAM_MODE = "mjpeg"
 
 
 async def keep_running(ws):
@@ -36,7 +40,7 @@ async def run():
     while True:
         try:
             async with websockets.connect(SERVER, max_size=None) as ws:
-                await ws.send("x3d")
+                await ws.send(STREAM_MODE)
                 print("watchdog: connected, holding simulation in real-time",
                       flush=True)
                 await asyncio.gather(keep_running(ws), drain(ws))

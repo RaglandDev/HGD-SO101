@@ -96,8 +96,10 @@
         // is dead for remote visitors and mixed-content-blocked under HTTPS.
         const wsProto = location.protocol === "https:" ? "wss://" : "ws://";
         const webotsUrl = wsProto + location.host + "/webots";
+        // mjpeg (server-rendered video), not x3d: the Webots R2023b X3D exporter
+        // segfaults on real x86 hosts. mjpeg renders via GL and streams frames.
         const connect = () => {
-            try { view.connect(webotsUrl, "x3d", true); }
+            try { view.connect(webotsUrl, "mjpeg", true); }
             catch (e) { hint.textContent = "Could not load the Webots 3D viewer: " + e; }
         };
         try {
