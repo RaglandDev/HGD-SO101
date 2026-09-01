@@ -18,10 +18,14 @@
 		{$BASIC_AUTH_USER} {$BASIC_AUTH_HASH}
 	}
 
-	# Webots 3D streaming websocket (a control channel — proxied read-only via
-	# the viewer's broadcast mode). Prefix stripped so the backend sees "/".
+	# Webots 3D stream. Carries both the control websocket AND, in mjpeg mode,
+	# a multipart MJPEG video stream fetched over HTTP — so buffering must be
+	# off (flush_interval -1) or the <img> never receives frames (white panel).
+	# Prefix stripped so the backend sees "/".
 	handle_path /webots* {
-		reverse_proxy simulation_control:1234
+		reverse_proxy simulation_control:1234 {
+			flush_interval -1
+		}
 	}
 
 	# Reachy Mini POV MJPEG stream. flush_interval -1 disables response
