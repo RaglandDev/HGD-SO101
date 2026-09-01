@@ -6,23 +6,53 @@ networks:
   shared_autonomy_net:
     driver: bridge
 
+volumes:
+  caddy_data:      # Caddy's TLS certs / ACME state (persist across restarts)
+  caddy_config:
+
 services:
+  # Public edge: terminates TLS, requires HTTP Basic auth, and proxies the app,
+  # the Webots 3D stream, and the Reachy POV stream through ONE origin. This is
+  # what makes getUserMedia (webcam) work remotely (secure context) and closes
+  # the unauthenticated control surface. See deploy/Caddyfile and DEPLOY.md.
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # domain (auto-HTTPS via Let's Encrypt) or ":443" for a self-signed cert
+      - SITE_ADDRESS=${SITE_ADDRESS:-:443}
+      - BASIC_AUTH_USER=${BASIC_AUTH_USER:-demo}
+      # bcrypt hash from `docker run --rm caddy:2 caddy hash-password --plaintext '...'`
+      - BASIC_AUTH_HASH=${BASIC_AUTH_HASH:?set BASIC_AUTH_HASH in .env — see DEPLOY.md}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - shared_autonomy_net
+    depends_on:
+      - web_input_bridge
+      - simulation_control
+
   web_input_bridge:
     restart: unless-stopped
-    build: 
+    build:
       context: ./src/web_bridge
+    # bound to loopback for local debugging only; the public entrypoint is Caddy
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     networks:
       - shared_autonomy_net
     volumes:
-      - ./src/web_bridge:/app
       # the web server lists, serves, and deletes MCAP recordings
       - ./recordings:/recordings
 
   perception_processor:
     restart: unless-stopped
-    build: 
+    build:
       context: ./src/perception
     networks:
       - shared_autonomy_net
@@ -33,18 +63,20 @@ services:
 
   simulation_control:
     restart: unless-stopped
-    platform: linux/amd64    
-    build: 
+    platform: linux/amd64
+    build:
       context: ./src/simulation
-    ports:
-      - "1234:1234"
-      - "5001:5000"
+    # 1234 (Webots stream) and 5000 (Reachy POV) are NOT published to the host;
+    # Caddy reaches them over the internal network and gates them behind auth.
+    expose:
+      - "1234"
+      - "5000"
     networks:
       - shared_autonomy_net
     volumes:
       - ./src/simulation:/ros2_ws/src/simulation
     # CRITICAL: Required for 3D software rendering (Webots + Xvfb)
-    shm_size: '2gb' 
+    shm_size: '2gb'
 
   supervisor:
     restart: unless-stopped

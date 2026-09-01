@@ -16,18 +16,23 @@ top-down grasp. Everything runs in Docker.
 - A webcam
 
 ## Usage
-1. `docker compose up --build` (first build downloads Webots and exports the
+1. `cp .env.example .env` and set a Basic-auth password hash (the stack is
+   fronted by an authenticating TLS proxy — see [DEPLOY.md](DEPLOY.md) for the
+   one-liner). For local-only work you still need the `.env`.
+2. `docker compose up --build` (first build downloads Webots and exports the
    YOLOv8n-pose ONNX model — it takes a while)
-2. Open http://localhost:8080/ and accept webcam permissions
-3. Wait for the Webots container to finish loading (the "Reachy Mini POV"
+3. Open `https://<host>/` (or `http://localhost:8080/` for local backend-only
+   work) and accept webcam permissions. Deploying to a public host? Follow
+   **[DEPLOY.md](DEPLOY.md)** — HTTPS is required for the webcam to work.
+4. Wait for the Webots container to finish loading (the "Reachy Mini POV"
    panel starts showing the simulated table)
-4. **Look toward a cube** (left / center / right) — the matching chip in the
+5. **Look toward a cube** (left / center / right) — the matching chip in the
    status bar lights up after ~0.7 s of dwell, and the Reachy Mini head turns
    toward that cube
-5. **Raise a hand above your head** — one raise triggers one pick: the SO-101
+6. **Raise a hand above your head** — one raise triggers one pick: the SO-101
    grabs the selected cube and drops it on the tray while you relax. The
    banner at the top tells you what to do next.
-6. **Reset Scene** puts the cubes back so you can go again.
+7. **Reset Scene** puts the cubes back so you can go again.
 
 If left/right selection feels mirrored on your webcam, flip `HEAD_YAW_SIGN`
 for `supervisor` in `docker-compose.yml`.
@@ -71,11 +76,11 @@ their duration, message count, topic count, and size. Each row has:
   (works over the network, so a visitor on a deployed site can grab it — no
   server shell access needed).
 - **Foxglove ↗** — opens the recording directly in
-  [Foxglove Studio](https://foxglove.dev) via its remote-file URL. This needs
-  the recording to be fetchable by your browser from Foxglove's origin, i.e.
-  the demo served over **public HTTPS** (the download endpoint already sends
-  `Access-Control-Allow-Origin: *`). On `localhost`, use **Download** and open
-  the file in Foxglove manually.
+  [Foxglove Studio](https://foxglove.dev) via its remote-file URL. This requires
+  the download to be fetchable cross-origin by Foxglove, which the Basic-auth
+  login on a deployed host blocks — so in practice use **Download** and open the
+  file in Foxglove manually. (CORS on the download is scoped to the Foxglove
+  origin via `FOXGLOVE_ORIGIN`, not `*`.)
 
 CLI equivalent:
 
@@ -84,9 +89,12 @@ CLI equivalent:
 ```
 
 ### Exposed ports
-- `8080` — web app (HTTP + WebSocket)
-- `1234` — Webots streaming server (3D view embedded in the web app)
-- `5001` — Reachy Mini POV (MJPEG)
+On a public host, **only Caddy is internet-facing** (`80`/`443`); it proxies the
+services below over the internal Docker network behind TLS + Basic auth (see
+[DEPLOY.md](DEPLOY.md)).
+- `8080` — web app (HTTP + WebSocket); published on `127.0.0.1` for local dev
+- `1234` — Webots streaming server (proxied at `/webots`)
+- `5000` — Reachy Mini POV MJPEG (proxied at `/pov`)
 
 ## Simulation details
 - **SO-101**: converted from TheRobotStudio's `so101_new_calib.urdf` with
@@ -114,8 +122,8 @@ This architecture is fully containerized for deployment on robotic hardware.
 On macOS, Docker runs inside a Linux VM and the Webots container is emulated
 x86-64 (no arm64 Webots build), so the simulation runs well below real time
 and ONNX inference is CPU-only. For a smooth live demo, deploy to a native
-x86-64 Linux host (e.g. an Ubuntu workstation or cloud VM with the three
-ports exposed) — the same `docker compose up` works unchanged.
+x86-64 Linux host (e.g. an Ubuntu workstation or cloud VM). See
+**[DEPLOY.md](DEPLOY.md)** for the full provision → record → tear-down guide.
 
 ## Credits
 - [TheRobotStudio SO-ARM100 / SO-101](https://github.com/TheRobotStudio/SO-ARM100) (Apache-2.0) — arm URDF + meshes

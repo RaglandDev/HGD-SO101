@@ -210,8 +210,33 @@ private:
   }
 
   void image_callback(const sensor_msgs::msg::CompressedImage::SharedPtr msg) {
-    cv::Mat frame = cv::imdecode(msg->data, cv::IMREAD_COLOR);
+    // The compressed bytes originate from the browser over the public WebSocket
+    // path, so treat them as hostile. Bound the payload, catch decoder throws,
+    // and reject absurd dimensions before allocating/inferring — otherwise a
+    // tiny crafted JPEG declaring e.g. 40000x40000 either throws out of this
+    // callback (std::terminate) or OOM-kills the node.
+    constexpr size_t MAX_COMPRESSED_BYTES = 4 * 1024 * 1024;  // 4 MB
+    constexpr int MAX_DIM = 4096;                             // px per side
+    if (msg->data.size() > MAX_COMPRESSED_BYTES) {
+      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
+                           "dropping oversized frame: %zu bytes", msg->data.size());
+      return;
+    }
+    cv::Mat frame;
+    try {
+      frame = cv::imdecode(msg->data, cv::IMREAD_COLOR);
+    } catch (const cv::Exception &e) {
+      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
+                           "imdecode failed: %s", e.what());
+      return;
+    }
     if (frame.empty()) return;
+    if (frame.cols > MAX_DIM || frame.rows > MAX_DIM) {
+      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
+                           "dropping frame with excessive dimensions: %dx%d",
+                           frame.cols, frame.rows);
+      return;
+    }
 
     geometry_msgs::msg::PoseStamped head_pose;
     head_pose.header.stamp = this->now();

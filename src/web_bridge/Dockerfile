@@ -11,8 +11,12 @@ RUN pip3 install fastapi uvicorn websockets
 WORKDIR /workspace
 RUN mkdir -p src/ros2_bridge/src
 
-COPY main.py index.html script.js style.css /workspace/
-COPY wwi/ /workspace/wwi/
+# Backend + entry HTML live at the workspace root (served by app routes only).
+COPY main.py index.html /workspace/
+# Public web assets live under ./static and are the ONLY thing StaticFiles
+# exposes at /static/* — keep source files (main.py, entrypoint.sh) out of here.
+COPY script.js style.css /workspace/static/
+COPY wwi/ /workspace/static/wwi/
 COPY ros2_bridge/ /workspace/src/ros2_bridge/
 
 RUN . /opt/ros/humble/setup.sh && \

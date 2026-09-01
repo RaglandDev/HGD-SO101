@@ -18,3 +18,6 @@ log/
 # MCAP session recordings (keep the dir, not the captures)
 recordings/*
 !recordings/.gitkeep
+
+# local deployment secrets (Caddy basic-auth hash, site address)
+.env

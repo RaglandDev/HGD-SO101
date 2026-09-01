@@ -43,7 +43,7 @@
         <section class="panel wide">
             <h2>Simulation (Webots 3D stream)</h2>
             <webots-view id="wview"></webots-view>
-            <p class="hint" id="wview-hint">Connecting to the Webots streaming server on ws://localhost:1234…</p>
+            <p class="hint" id="wview-hint">Connecting to the Webots streaming server…</p>
         </section>
 
         <section class="panel wide">
@@ -91,8 +91,13 @@
         };
         // broadcast mode: this client is view-only and can never pause the
         // simulation (a reloading/closing tab used to freeze it)
+        // Derive the stream URL from this page's origin (proxied at /webots by
+        // the reverse proxy) instead of a hardcoded ws://localhost:1234, which
+        // is dead for remote visitors and mixed-content-blocked under HTTPS.
+        const wsProto = location.protocol === "https:" ? "wss://" : "ws://";
+        const webotsUrl = wsProto + location.host + "/webots";
         const connect = () => {
-            try { view.connect("ws://localhost:1234", "x3d", true); }
+            try { view.connect(webotsUrl, "x3d", true); }
             catch (e) { hint.textContent = "Could not load the Webots 3D viewer: " + e; }
         };
         try {

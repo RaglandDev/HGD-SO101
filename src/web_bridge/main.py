@@ -12,8 +12,32 @@ app = FastAPI()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HTML_PATH = os.path.join(BASE_DIR, "index.html")
 RECORDINGS_DIR = os.environ.get("RECORDINGS_DIR", "/recordings")
+# Origin allowed to fetch MCAP downloads cross-origin (Foxglove "open remote").
+# Scoped rather than "*" so an arbitrary site can't script-read recordings.
+FOXGLOVE_ORIGIN = os.environ.get("FOXGLOVE_ORIGIN", "https://app.foxglove.dev")
 
-app.mount("/static", StaticFiles(directory=BASE_DIR), name="static")
+# Serve ONLY web assets, never the backend source. Assets live in a dedicated
+# ./static subdir (see Dockerfile); mounting BASE_DIR would expose main.py,
+# entrypoint.sh, etc. at /static/*.
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+
+def _resolve_session_dir(name: str) -> str:
+    """Validate an untrusted recording name and return its absolute directory.
+
+    Rejects anything that isn't a single path component confined to
+    RECORDINGS_DIR. `os.path.basename` alone is not enough — ".", "..", empty,
+    and dot-segments must be excluded and the resolved path re-checked to be a
+    strict child (defends against symlinks and normalization quirks).
+    """
+    if not name or name in (".", "..") or name != os.path.basename(name):
+        raise HTTPException(status_code=400, detail="bad name")
+    root = os.path.realpath(RECORDINGS_DIR)
+    session_dir = os.path.realpath(os.path.join(root, name))
+    if session_dir != root and os.path.commonpath([root, session_dir]) == root:
+        return session_dir
+    raise HTTPException(status_code=400, detail="bad name")
 
 
 def _read_bag_meta(session_dir):
@@ -61,25 +85,20 @@ async def recordings():
 
 @app.get("/recordings/{name}")
 async def download_recording(name: str):
-    # guard against path traversal; only serve a real session's .mcap
-    if "/" in name or ".." in name:
-        raise HTTPException(status_code=400, detail="bad name")
-    session_dir = os.path.join(RECORDINGS_DIR, name)
+    session_dir = _resolve_session_dir(name)
     mcaps = glob.glob(os.path.join(session_dir, "*.mcap"))
     if not mcaps:
         raise HTTPException(status_code=404, detail="not found")
-    # permissive CORS so Foxglove Studio (app.foxglove.dev) can fetch it
+    # CORS scoped to Foxglove so only that app can script-fetch, not any site
     return FileResponse(
         mcaps[0], media_type="application/octet-stream",
         filename=f"{name}.mcap",
-        headers={"Access-Control-Allow-Origin": "*"})
+        headers={"Access-Control-Allow-Origin": FOXGLOVE_ORIGIN})
 
 
 @app.delete("/recordings/{name}")
 async def delete_recording(name: str):
-    if "/" in name or ".." in name:
-        raise HTTPException(status_code=400, detail="bad name")
-    session_dir = os.path.join(RECORDINGS_DIR, name)
+    session_dir = _resolve_session_dir(name)
     if not os.path.isdir(session_dir):
         raise HTTPException(status_code=404, detail="not found")
     import shutil

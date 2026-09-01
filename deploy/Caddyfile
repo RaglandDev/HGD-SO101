@@ -1,0 +1,39 @@
+# Reverse proxy for the HGD-SO101 demo.
+#
+# One TLS origin fronts three backends and requires HTTP Basic auth on
+# everything. This (a) gives the page a secure context so the browser lets
+# getUserMedia() open the webcam, and (b) closes the otherwise-unauthenticated
+# control surface (scene reset, recording, raw frame injection, sim control).
+#
+# SITE_ADDRESS: a hostname (e.g. demo.example.com) gets an automatic Let's
+# Encrypt cert; ":443" serves a self-signed cert from Caddy's local CA (fine
+# for a private demo — accept the browser warning, it's still a secure context).
+
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	# Gate the whole origin. The browser replays these credentials on the
+	# WebSocket handshake and on the POV <img>, so the app keeps working.
+	basic_auth {
+		{$BASIC_AUTH_USER} {$BASIC_AUTH_HASH}
+	}
+
+	# Webots 3D streaming websocket (a control channel — proxied read-only via
+	# the viewer's broadcast mode). Prefix stripped so the backend sees "/".
+	handle_path /webots* {
+		reverse_proxy simulation_control:1234
+	}
+
+	# Reachy Mini POV MJPEG stream. flush_interval -1 disables response
+	# buffering so the multipart stream reaches the browser frame-by-frame.
+	handle_path /pov* {
+		reverse_proxy simulation_control:5000 {
+			flush_interval -1
+		}
+	}
+
+	# Everything else: the FastAPI app (/, /ws, /recordings, /static/*).
+	handle {
+		reverse_proxy web_input_bridge:8080
+	}
+}

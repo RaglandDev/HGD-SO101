@@ -8,13 +8,22 @@ sendCanvas.height = height;
 var sendCtx = sendCanvas.getContext('2d');
 
 var wsProto = location.protocol === 'https:' ? 'wss://' : 'ws://';
-var ws = new WebSocket(wsProto + location.host + '/ws');
+var ws = null;
+var reconnectDelay = 500;
 var pending = false;
 var fallbackTimeout;
 
-// Reachy POV MJPEG stream (simulation container, host port 5001)
-document.getElementById('pov').src =
-    location.protocol + '//' + location.hostname + ':5001/stream';
+// Escape untrusted strings before they go into innerHTML. Topic names/descriptions
+// and recording names are rendered this way; treat them as data, never markup.
+function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+}
+
+// Reachy POV MJPEG stream — proxied through this same origin (/pov/stream) so it
+// works under HTTPS behind the reverse proxy instead of a hardcoded :5001 port.
+document.getElementById('pov').src = location.origin + '/pov/stream';
 
 var banner = document.getElementById('banner');
 var connStat = document.getElementById('conn-stat');
@@ -76,15 +85,15 @@ function loadRecordings() {
             var fox = 'https://app.foxglove.dev/~/view?ds=remote-file&ds.url='
                 + encodeURIComponent(url);
             rows += '<tr>'
-                + '<td class="mono">' + r.name + '</td>'
+                + '<td class="mono">' + esc(r.name) + '</td>'
                 + '<td>' + (r.duration_s != null ? r.duration_s + ' s' : '—') + '</td>'
                 + '<td>' + (r.messages != null ? r.messages : '—') + '</td>'
                 + '<td>' + (r.topics != null ? r.topics : '—') + '</td>'
                 + '<td>' + humanSize(r.size_bytes) + '</td>'
                 + '<td class="rec-actions">'
-                + '<a href="' + url + '" download>Download</a>'
-                + '<a href="' + fox + '" target="_blank" rel="noopener">Foxglove ↗</a>'
-                + '<a href="#" class="del" data-name="' + r.name + '">Delete</a>'
+                + '<a href="' + esc(url) + '" download>Download</a>'
+                + '<a href="' + esc(fox) + '" target="_blank" rel="noopener">Foxglove ↗</a>'
+                + '<a href="#" class="del" data-name="' + esc(r.name) + '">Delete</a>'
                 + '</td>'
                 + '</tr>';
         }
@@ -109,7 +118,8 @@ navigator.mediaDevices.getUserMedia({ video: true })
     .catch(function (e) { connStat.textContent = 'webcam error: ' + e.name; });
 
 function sendFrame() {
-    if (ws.readyState === 1) {
+    if (!ws) return;
+    if (ws.readyState === 1) {          // OPEN
         sendCtx.drawImage(video, 0, 0, width, height);
         sendCanvas.toBlob(function (b) {
             if (b) {
@@ -122,19 +132,11 @@ function sendFrame() {
                 }, 150);
             }
         }, 'image/jpeg', 0.5);
-    } else {
+    } else if (ws.readyState === 0) {   // CONNECTING — retry shortly
         setTimeout(sendFrame, 30);
     }
+    // CLOSING/CLOSED: stop the pump; connect()'s onopen restarts it on reconnect
 }
-
-ws.onopen = function () {
-    connStat.textContent = 'connected';
-    sendFrame();
-};
-
-ws.onclose = function () {
-    connStat.textContent = 'disconnected';
-};
 
 var topicsBody = document.getElementById('topics-body');
 var topicLog = {};        // topic name -> [{ts, v}] rolling message stream
@@ -152,13 +154,13 @@ function buildTopicsTable(topics) {
     var html = '';
     for (var i = 0; i < topics.length; i++) {
         var n = topics[i].n;
-        html += '<tr class="topic-row" data-topic="' + n + '">'
-            + '<td class="mono"><span class="caret">▸</span> ' + n + '</td>'
+        html += '<tr class="topic-row" data-topic="' + esc(n) + '">'
+            + '<td class="mono"><span class="caret">▸</span> ' + esc(n) + '</td>'
             + '<td class="rate"></td>'
             + '<td class="mono latest"></td>'
-            + '<td class="muted">' + topics[i].d + '</td>'
+            + '<td class="muted">' + esc(topics[i].d) + '</td>'
             + '</tr>'
-            + '<tr class="topic-detail" data-topic="' + n + '"><td colspan="4">'
+            + '<tr class="topic-detail" data-topic="' + esc(n) + '"><td colspan="4">'
             + '<pre class="stream"></pre></td></tr>';
     }
     topicsBody.innerHTML = html;
@@ -225,19 +227,43 @@ function updateStatus(d) {
         : 'no face detected';
 }
 
-ws.onmessage = function (e) {
-    try {
-        var m = JSON.parse(e.data);
-        if (m.t === "head_pose") {
-            // head_pose replies pace the webcam upload loop: send the next frame
-            // as soon as perception finished with the previous one
-            if (pending) {
-                pending = false;
-                clearTimeout(fallbackTimeout);
-                requestAnimationFrame(sendFrame);
+function connect() {
+    ws = new WebSocket(wsProto + location.host + '/ws');
+
+    ws.onopen = function () {
+        reconnectDelay = 500;   // reset backoff on a good connection
+        connStat.textContent = 'connected';
+        sendFrame();
+    };
+
+    ws.onclose = function () {
+        // reconnect with capped exponential backoff so a container restart or
+        // network blip recovers on its own instead of wedging every browser
+        connStat.textContent = 'disconnected — reconnecting…';
+        setTimeout(connect, reconnectDelay);
+        reconnectDelay = Math.min(reconnectDelay * 2, 5000);
+    };
+
+    ws.onerror = function () {
+        try { ws.close(); } catch (x) { }   // force onclose -> reconnect path
+    };
+
+    ws.onmessage = function (e) {
+        try {
+            var m = JSON.parse(e.data);
+            if (m.t === "head_pose") {
+                // head_pose replies pace the webcam upload loop: send the next
+                // frame as soon as perception finished with the previous one
+                if (pending) {
+                    pending = false;
+                    clearTimeout(fallbackTimeout);
+                    requestAnimationFrame(sendFrame);
+                }
+            } else if (m.t === "status") {
+                updateStatus(m.d);
             }
-        } else if (m.t === "status") {
-            updateStatus(m.d);
-        }
-    } catch (x) { }
-};
+        } catch (x) { }
+    };
+}
+
+connect();

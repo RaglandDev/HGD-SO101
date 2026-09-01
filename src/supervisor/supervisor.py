@@ -112,6 +112,10 @@ COOLDOWN_S = float(os.environ.get("COOLDOWN_S", "2.5"))
 RECORDINGS_DIR = os.environ.get("RECORDINGS_DIR", "/recordings")
 MAX_RECORDINGS = int(os.environ.get("MAX_RECORDINGS", "5"))
 HEAD_POSE_TIMEOUT_S = 1.5
+# Recording is triggerable from the web UI; bound it so it can't fill the disk.
+REC_MAX_DURATION_S = float(os.environ.get("REC_MAX_DURATION_S", "300"))     # auto-stop
+REC_MAX_BAG_BYTES = int(os.environ.get("REC_MAX_BAG_BYTES", str(512 * 1024 * 1024)))
+REC_MIN_FREE_BYTES = int(os.environ.get("REC_MIN_FREE_BYTES", str(1024 * 1024 * 1024)))
 
 
 def quat_to_yaw_pitch(q):
@@ -151,9 +155,11 @@ class Supervisor(Node):
         # MCAP recording, toggled from the web page's Record button
         self.rec_proc = None
         self.rec_name = None
+        self.rec_start = 0.0
         self.create_subscription(String, "/sys/control", self.on_control, 10)
 
         self.create_timer(0.1, self.tick)
+        self.get_logger().info("Supervisor ready")
 
     # --- MCAP recording -----------------------------------------------------
     def on_control(self, msg):
@@ -165,11 +171,26 @@ class Supervisor(Node):
     def start_recording(self):
         if self.rec_proc is not None:
             return
+        # refuse to start if the volume is already low, so a recording can't be
+        # the thing that fills the disk and wedges every writer with ENOSPC
+        try:
+            free = shutil.disk_usage(RECORDINGS_DIR).free
+        except OSError:
+            free = REC_MIN_FREE_BYTES  # can't stat -> don't block the demo
+        if free < REC_MIN_FREE_BYTES:
+            self.get_logger().warn(
+                f"refusing to record: only {free // (1024*1024)} MB free")
+            return
         self.rec_name = "session_" + datetime.now().strftime("%Y%m%d_%H%M%S")
         out = os.path.join(RECORDINGS_DIR, self.rec_name)
         try:
+            # --max-bag-size bounds a single bag file; the tick()-driven
+            # REC_MAX_DURATION_S auto-stop bounds total capture time.
             self.rec_proc = subprocess.Popen(
-                ["ros2", "bag", "record", "-s", "mcap", "-a", "--output", out])
+                ["ros2", "bag", "record", "-s", "mcap", "-a",
+                 "--max-bag-size", str(REC_MAX_BAG_BYTES),
+                 "--output", out])
+            self.rec_start = time.monotonic()
             self.get_logger().info(f"recording started -> {out}.mcap")
         except Exception as e:
             self.rec_proc = None
@@ -184,6 +205,7 @@ class Supervisor(Node):
             self.rec_proc.wait(timeout=10)
         except subprocess.TimeoutExpired:
             self.rec_proc.kill()
+            self.rec_proc.wait()   # reap the killed child so it isn't a zombie
         self.get_logger().info(f"recording stopped -> {self.rec_name}.mcap")
         self.rec_proc = None
         self.rec_name = None
@@ -200,7 +222,6 @@ class Supervisor(Node):
                 self.get_logger().info(f"pruned old recording {os.path.basename(old)}")
             except OSError as e:
                 self.get_logger().warn(f"could not prune {old}: {e}")
-        self.get_logger().info("Supervisor ready")
 
     # --- inputs -------------------------------------------------------------
     def on_head_pose(self, msg):
@@ -238,6 +259,10 @@ class Supervisor(Node):
         if new_zone != self.zone:
             self.zone = new_zone
             self.zone_since = time.monotonic()
+            # clear the dwelled selection on any zone change so a gesture raised
+            # mid-turn can't fire a pick for the cube you just looked away from;
+            # the new zone must be re-dwelled (DWELL_S) before it's selectable
+            self.selected = None
 
     def on_gesture(self, msg):
         if msg.data != self.gesture:
@@ -256,9 +281,16 @@ class Supervisor(Node):
 
         # forget a recorder that exited on its own (e.g. disk error)
         if self.rec_proc is not None and self.rec_proc.poll() is not None:
+            self.rec_proc.wait()   # reap so it doesn't linger as a zombie
             self.rec_proc = None
             self.rec_name = None
             self.prune_recordings()
+        # auto-stop a long-running recording so it can't grow unbounded
+        elif (self.rec_proc is not None
+                and now - self.rec_start >= REC_MAX_DURATION_S):
+            self.get_logger().info(
+                f"auto-stopping recording after {REC_MAX_DURATION_S:.0f}s cap")
+            self.stop_recording()
 
         if head_pose_fresh and self.zone is not None:
             if now - self.zone_since >= DWELL_S:
@@ -325,9 +357,17 @@ class Supervisor(Node):
 def main():
     rclpy.init()
     node = Supervisor()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        # finalize any in-progress recording (ros2 bag needs SIGINT) so a
+        # `compose down`/redeploy doesn't leave a truncated, unopenable MCAP
+        node.stop_recording()
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == "__main__":
