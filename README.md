@@ -93,7 +93,8 @@ On a public host, **only Caddy is internet-facing** (`80`/`443`); it proxies the
 services below over the internal Docker network behind TLS + Basic auth (see
 [DEPLOY.md](DEPLOY.md)).
 - `8080` — web app (HTTP + WebSocket); published on `127.0.0.1` for local dev
-- `1234` — Webots streaming server (proxied at `/webots`)
+- `1234` — Webots streaming server (internal only; keeps the sim in real-time
+  via the watchdog — not browser-facing)
 - `5000` — Reachy Mini POV MJPEG (proxied at `/pov`)
 
 ## Simulation details

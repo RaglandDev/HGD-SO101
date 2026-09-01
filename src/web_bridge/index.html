@@ -41,12 +41,6 @@
         </section>
 
         <section class="panel wide">
-            <h2>Simulation (Webots 3D stream)</h2>
-            <webots-view id="wview"></webots-view>
-            <p class="hint" id="wview-hint">Connecting to the Webots streaming server…</p>
-        </section>
-
-        <section class="panel wide">
             <h2>Live ROS 2 topics</h2>
             <p class="hint">The messages flowing through the pipeline right now. Rates update live — click a topic to watch its message stream.</p>
             <div class="table-scroll">
@@ -78,51 +72,6 @@
     </main>
 
     <script src="/static/script.js"></script>
-    <script type="module">
-        import "/static/wwi/WebotsView.js";
-        const view = document.getElementById("wview");
-        const hint = document.getElementById("wview-hint");
-        // The viewer computes its canvas size lazily; poke its resize()
-        // repeatedly while the scene loads so it fills the panel instead of
-        // staying a sliver until a fullscreen toggle forces a resize.
-        const nudgeResize = () => {
-            try { view.resize(); } catch (e) { }
-            window.dispatchEvent(new Event("resize"));
-        };
-        // broadcast mode: this client is view-only and can never pause the
-        // simulation (a reloading/closing tab used to freeze it)
-        // Derive the stream URL from this page's origin (proxied at /webots by
-        // the reverse proxy) instead of a hardcoded ws://localhost:1234, which
-        // is dead for remote visitors and mixed-content-blocked under HTTPS.
-        const wsProto = location.protocol === "https:" ? "wss://" : "ws://";
-        const webotsUrl = wsProto + location.host + "/webots";
-        // mjpeg (server-rendered video), not x3d: the Webots R2023b X3D exporter
-        // segfaults on real x86 hosts. mjpeg renders via GL and streams frames.
-        const connect = () => {
-            try { view.connect(webotsUrl, "mjpeg", true); }
-            catch (e) { hint.textContent = "Could not load the Webots 3D viewer: " + e; }
-        };
-        try {
-            view.onready = () => {
-                hint.textContent = "";
-                let n = 0;
-                const t = setInterval(() => {
-                    nudgeResize();
-                    if (++n > 10) clearInterval(t);
-                }, 400);
-            };
-            // Reconnect gently on drop (single delayed retry) rather than the
-            // storm of immediate full-page reloads the viewer does by default.
-            view.ondisconnect = () => {
-                hint.textContent = "Webots stream dropped — reconnecting…";
-                setTimeout(connect, 4000);
-            };
-            connect();
-            setTimeout(nudgeResize, 1500);
-        } catch (e) {
-            hint.textContent = "Could not load the Webots 3D viewer: " + e;
-        }
-    </script>
 </body>
 
 </html>
